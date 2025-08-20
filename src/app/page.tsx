@@ -61,7 +61,7 @@ export default function Home() {
               Everything You Need for Successful Dog Training
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              From scheduling to billing, we've got you covered with tools designed 
+              From scheduling to billing, we&apos;ve got you covered with tools designed 
               specifically for dog training professionals.
             </p>
           </div>
@@ -150,7 +150,7 @@ export default function Home() {
               Designed for Every Role
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Whether you're a trainer, parent, or administrator, our platform adapts to your needs.
+              Whether you&apos;re a trainer, parent, or administrator, our platform adapts to your needs.
             </p>
           </div>
 
@@ -164,7 +164,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-blue-800">
-                  <li>• View today's sessions and upcoming bookings</li>
+                  <li>• View today&apos;s sessions and upcoming bookings</li>
                   <li>• Record session feedback with photos</li>
                   <li>• Manage your availability and schedule</li>
                   <li>• Communicate with parents and admins</li>
@@ -176,12 +176,12 @@ export default function Home() {
               <CardHeader>
                 <h3 className="text-2xl font-bold text-orange-800 mb-2">👨‍👩‍👧‍👦 Parents</h3>
                 <CardDescription className="text-orange-700">
-                  Stay connected with your dog's training progress and manage bookings easily.
+                  Stay connected with your dog&apos;s training progress and manage bookings easily.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-orange-800">
-                  <li>• View your dog's training progress</li>
+                  <li>• View your dog&apos;s training progress</li>
                   <li>• Book and manage training sessions</li>
                   <li>• Track invoices and payments</li>
                   <li>• Receive updates and announcements</li>

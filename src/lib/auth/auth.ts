@@ -40,7 +40,7 @@ const isSupabaseConfigured = () => {
 };
 
 export async function signIn(email: string, password: string) {
-  console.log('SignIn called with:', { email, password });
+  console.log('SignIn attempt:', { email, password });
   
   if (!isSupabaseConfigured()) {
     console.log('Using mock authentication');
@@ -58,7 +58,7 @@ export async function signIn(email: string, password: string) {
     
     // Check demo accounts
     const mockUser = mockUsers.find(user => user.email === email);
-    console.log('Looking for demo user:', email, 'Found:', mockUser);
+    console.log('Looking for mock user:', email, 'Found:', mockUser);
     
     if (mockUser) {
       // Demo account passwords
@@ -66,17 +66,16 @@ export async function signIn(email: string, password: string) {
       console.log('Checking password:', password, 'Valid passwords:', validPasswords);
       
       if (validPasswords.includes(password)) {
-        console.log('Demo account login successful');
+        console.log('Valid demo account password');
         localStorage.setItem('mockUser', JSON.stringify(mockUser));
         return { user: mockUser, session: { user: mockUser } };
       } else {
         console.log('Invalid password for demo account');
       }
     } else {
-      console.log('No demo user found for email:', email);
+      console.log('No mock user found for email:', email);
     }
     
-    console.log('Authentication failed - throwing error');
     throw new Error('Invalid email or password');
   }
 
@@ -93,7 +92,7 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signUp(email: string, password: string, fullName: string, role: UserRole) {
-  console.log('SignUp called with:', { email, fullName, role });
+  console.log('SignUp attempt:', { email, fullName, role });
   
   if (!isSupabaseConfigured()) {
     console.log('Using mock registration');
@@ -115,7 +114,8 @@ export async function signUp(email: string, password: string, fullName: string, 
     // Also store in mockUsers array for future reference
     mockUsers.push(newUser);
     
-    console.log('Mock registration successful');
+    console.log('Created new mock user:', newUser);
+    
     // Return the user immediately for mock authentication
     return { user: newUser, session: { user: newUser } };
   }
@@ -144,7 +144,7 @@ export async function signOut() {
   if (!isSupabaseConfigured()) {
     // Clear mock session
     localStorage.removeItem('mockUser');
-    console.log('Mock session cleared');
+    console.log('Cleared mock session');
     return;
   }
 
