@@ -9,7 +9,8 @@ import {
   MagnifyingGlassIcon,
   UserGroupIcon,
   CalendarIcon,
-  HeartIcon
+  HeartIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { User, Dog } from '@/types';
@@ -83,6 +84,21 @@ export default function DogsPage() {
   const [dogs, setDogs] = useState<Dog[]>(mockDogs);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    breed: '',
+    age: '',
+    weight: '',
+    medical_notes: '',
+    behavioral_notes: '',
+    vaccine_records: '',
+    preferences: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    emergency_contact_relationship: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -108,6 +124,62 @@ export default function DogsPage() {
     loadUser();
   }, []);
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      // Create new dog object
+      const newDog: Dog = {
+        id: Date.now().toString(), // Simple ID generation for demo
+        name: formData.name,
+        breed: formData.breed,
+        age: parseInt(formData.age) || 0,
+        weight: parseFloat(formData.weight) || 0,
+        owner_id: user?.id || '',
+        medical_notes: formData.medical_notes || undefined,
+        behavioral_notes: formData.behavioral_notes || undefined,
+        vaccine_records: formData.vaccine_records || undefined,
+        preferences: formData.preferences || undefined,
+        emergency_contact: formData.emergency_contact_name ? {
+          name: formData.emergency_contact_name,
+          phone: formData.emergency_contact_phone,
+          relationship: formData.emergency_contact_relationship || 'Owner'
+        } : undefined,
+        photo_url: '/api/placeholder/150/150',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Add to dogs list
+      setDogs(prev => [...prev, newDog]);
+      
+      // Reset form and close modal
+      setFormData({
+        name: '',
+        breed: '',
+        age: '',
+        weight: '',
+        medical_notes: '',
+        behavioral_notes: '',
+        vaccine_records: '',
+        preferences: '',
+        emergency_contact_name: '',
+        emergency_contact_phone: '',
+        emergency_contact_relationship: ''
+      });
+      setShowAddModal(false);
+    } catch (error) {
+      console.error('Error adding dog:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const filteredDogs = dogs.filter(dog =>
     dog.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     dog.breed.toLowerCase().includes(searchTerm.toLowerCase())
@@ -116,7 +188,7 @@ export default function DogsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(0_32_96)]"></div>
       </div>
     );
   }
@@ -131,7 +203,10 @@ export default function DogsPage() {
           </p>
         </div>
         {(user?.role === 'admin' || user?.role === 'parent') && (
-          <Button className="mt-4 sm:mt-0">
+          <Button 
+            className="mt-4 sm:mt-0"
+            onClick={() => setShowAddModal(true)}
+          >
             <PlusIcon className="h-4 w-4 mr-2" />
             Add New Dog
           </Button>
@@ -185,7 +260,7 @@ export default function DogsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.round(dogs.reduce((sum, dog) => sum + dog.age, 0) / dogs.length)}
+              {dogs.length > 0 ? Math.round(dogs.reduce((sum, dog) => sum + dog.age, 0) / dogs.length) : 0}
             </div>
             <p className="text-xs text-muted-foreground">
               Years old
@@ -200,8 +275,8 @@ export default function DogsPage() {
           <Card key={dog.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg font-semibold text-blue-600">
+                <div className="w-12 h-12 bg-[rgb(0_32_96)] bg-opacity-10 rounded-full flex items-center justify-center">
+                  <span className="text-lg font-semibold text-[rgb(0_32_96)]">
                     {dog.name.charAt(0)}
                   </span>
                 </div>
@@ -265,6 +340,145 @@ export default function DogsPage() {
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* Add Dog Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Add New Dog</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAddModal(false)}
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </Button>
+              </div>
+              <CardDescription>
+                Fill in the details to add a new dog to your profile
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Dog Name"
+                    placeholder="Enter dog's name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    required
+                  />
+                  <Input
+                    label="Breed"
+                    placeholder="Enter breed"
+                    value={formData.breed}
+                    onChange={(e) => handleInputChange('breed', e.target.value)}
+                    required
+                  />
+                  <Input
+                    label="Age (years)"
+                    type="number"
+                    placeholder="Enter age"
+                    value={formData.age}
+                    onChange={(e) => handleInputChange('age', e.target.value)}
+                    required
+                  />
+                  <Input
+                    label="Weight (kg)"
+                    type="number"
+                    step="0.1"
+                    placeholder="Enter weight"
+                    value={formData.weight}
+                    onChange={(e) => handleInputChange('weight', e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Medical Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Medical Information</h3>
+                  <Input
+                    label="Medical Notes"
+                    placeholder="Any medical conditions or notes"
+                    value={formData.medical_notes}
+                    onChange={(e) => handleInputChange('medical_notes', e.target.value)}
+                  />
+                  <Input
+                    label="Vaccine Records"
+                    placeholder="Vaccination status and records"
+                    value={formData.vaccine_records}
+                    onChange={(e) => handleInputChange('vaccine_records', e.target.value)}
+                  />
+                </div>
+
+                {/* Behavioral Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Behavioral Information</h3>
+                  <Input
+                    label="Behavioral Notes"
+                    placeholder="Behavioral observations and notes"
+                    value={formData.behavioral_notes}
+                    onChange={(e) => handleInputChange('behavioral_notes', e.target.value)}
+                  />
+                  <Input
+                    label="Preferences"
+                    placeholder="Likes, dislikes, favorite activities"
+                    value={formData.preferences}
+                    onChange={(e) => handleInputChange('preferences', e.target.value)}
+                  />
+                </div>
+
+                {/* Emergency Contact */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-gray-900">Emergency Contact</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      label="Contact Name"
+                      placeholder="Emergency contact name"
+                      value={formData.emergency_contact_name}
+                      onChange={(e) => handleInputChange('emergency_contact_name', e.target.value)}
+                    />
+                    <Input
+                      label="Contact Phone"
+                      placeholder="Emergency contact phone"
+                      value={formData.emergency_contact_phone}
+                      onChange={(e) => handleInputChange('emergency_contact_phone', e.target.value)}
+                    />
+                  </div>
+                  <Input
+                    label="Relationship"
+                    placeholder="Relationship to dog (e.g., Owner, Family Member)"
+                    value={formData.emergency_contact_relationship}
+                    onChange={(e) => handleInputChange('emergency_contact_relationship', e.target.value)}
+                  />
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex gap-2 pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={submitting}
+                    className="flex-1"
+                  >
+                    {submitting ? 'Adding Dog...' : 'Add Dog'}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => setShowAddModal(false)}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

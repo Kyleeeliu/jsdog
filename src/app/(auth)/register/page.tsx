@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,15 +35,49 @@ export default function RegisterPage() {
     }
 
     try {
-      await signUp(formData.email, formData.password, formData.fullName, formData.role);
+      console.log('Register page: Attempting sign up for:', formData.email);
+      const result = await signUp(formData.email, formData.password, formData.fullName, formData.role);
+      console.log('Register page: Sign up successful, result:', result);
       
-      // For mock authentication, redirect immediately
-      // For real Supabase, this would require email confirmation
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
+      // Check if email confirmation is required (for Supabase)
+      if (result && 'message' in result && result.message && result.message.includes('email')) {
+        console.log('Register page: Email confirmation required');
+        setEmailConfirmationRequired(true);
+        setSuccess(true);
+        setError(''); // Clear any previous errors
+        // Don't redirect to dashboard, show email confirmation message
+        return;
+      }
+      
+      // For mock authentication, set the user session immediately
+      if (result && result.user && result.session) {
+        console.log('Register page: Setting user session...');
+        try {
+          localStorage.setItem('mockUser', JSON.stringify(result.user));
+          // Verify it was set correctly
+          const stored = localStorage.getItem('mockUser');
+          if (stored) {
+            console.log('Register page: User session set successfully');
+          } else {
+            console.error('Register page: Failed to set user session');
+          }
+        } catch (error) {
+          console.error('Register page: Error setting user session:', error);
+        }
+        console.log('Register page: User session set, redirecting to dashboard');
+        
+        setSuccess(true);
+        setTimeout(() => {
+          console.log('Register page: Redirecting to dashboard');
+          router.push('/dashboard');
+        }, 2000);
+      } else {
+        // For Supabase with email confirmation, show success message
+        setSuccess(true);
+        setError('');
+      }
     } catch (err) {
+      console.error('Register page: Sign up error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred during registration');
     } finally {
       setLoading(false);
@@ -59,14 +94,33 @@ export default function RegisterPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center text-green-600">🎉 Registration Successful!</CardTitle>
           <CardDescription className="text-center">
-            Welcome to Just Dogs! Redirecting you to your dashboard...
+            {emailConfirmationRequired ? 
+              'Please check your email to confirm your account before signing in.' :
+              'Welcome to Just Dogs! Redirecting you to your dashboard...'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-sm text-gray-600">
-            You can now sign in with your new account.
-          </p>
+          {!emailConfirmationRequired ? (
+            <>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[rgb(0_32_96)] mx-auto mb-4"></div>
+              <p className="text-sm text-gray-600">
+                You can now sign in with your new account.
+              </p>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                We've sent a confirmation email to your address. Please click the link in the email to verify your account.
+              </p>
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-[rgb(0_32_96)] text-white hover:bg-[rgb(0_24_72)] focus-visible:ring-[rgb(0_32_96)] h-10 py-2 px-4"
+              >
+                Go to Sign In
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -115,7 +169,7 @@ export default function RegisterPage() {
             <select
               value={formData.role}
               onChange={(e) => handleInputChange('role', e.target.value)}
-              className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[rgb(0_32_96)] focus:border-transparent"
               required
             >
               <option value="parent">Dog Parent</option>
@@ -146,7 +200,7 @@ export default function RegisterPage() {
           
           <Button
             type="submit"
-            className="w-full"
+            className="w-full bg-[rgb(0_32_96)] hover:bg-[rgb(0_24_72)]"
             loading={loading}
             disabled={loading}
           >
@@ -159,7 +213,7 @@ export default function RegisterPage() {
             Already have an account?{' '}
             <Link
               href="/login"
-              className="text-blue-600 hover:text-blue-500 hover:underline"
+              className="text-[rgb(0_32_96)] hover:text-[rgb(0_24_72)] hover:underline"
             >
               Sign in
             </Link>
@@ -167,8 +221,8 @@ export default function RegisterPage() {
         </div>
 
         {/* Development Note */}
-        <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-xs text-blue-700">
+        <div className="mt-6 p-3 bg-[rgb(0_32_96)] bg-opacity-10 border border-[rgb(0_32_96)] border-opacity-20 rounded-md">
+          <p className="text-xs text-[rgb(0_32_96)]">
             <strong>Development Mode:</strong> Registration works immediately without email confirmation. 
             In production, you would receive a confirmation email.
           </p>

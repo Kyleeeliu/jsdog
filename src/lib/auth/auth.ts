@@ -1,6 +1,28 @@
 import { supabase } from '../supabase/client';
 import { User, UserRole } from '@/types';
 
+// Utility function to safely set localStorage with retry
+const safeSetLocalStorage = (key: string, value: string, maxRetries = 3) => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      localStorage.setItem(key, value);
+      // Verify it was set correctly
+      const stored = localStorage.getItem(key);
+      if (stored === value) {
+        return true;
+      }
+    } catch (error) {
+      console.error(`Failed to set localStorage key ${key}, attempt ${i + 1}:`, error);
+      if (i === maxRetries - 1) {
+        throw error;
+      }
+      // Small delay before retry
+      new Promise(resolve => setTimeout(resolve, 50));
+    }
+  }
+  return false;
+};
+
 // Mock user data for development when Supabase is not configured
 const mockUsers: User[] = [
   {
@@ -47,13 +69,30 @@ export async function signIn(email: string, password: string) {
     
     // First, check for newly registered users
     const newUserStr = localStorage.getItem('newUser_' + email);
+    console.log('Checking for new user:', 'newUser_' + email, 'Found:', newUserStr);
+    
     if (newUserStr) {
       console.log('Found newly registered user');
-      const newUser = JSON.parse(newUserStr);
-      // For newly registered users, accept any password (since we don't store passwords in mock)
-      localStorage.setItem('mockUser', JSON.stringify(newUser));
-      localStorage.removeItem('newUser_' + email);
-      return { user: newUser, session: { user: newUser } };
+      try {
+        const newUser = JSON.parse(newUserStr);
+        console.log('Parsed new user:', newUser);
+        
+        // For newly registered users, accept any password (since we don't store passwords in mock)
+        safeSetLocalStorage('mockUser', JSON.stringify(newUser));
+        console.log('Set mockUser in localStorage:', JSON.stringify(newUser));
+        
+        localStorage.removeItem('newUser_' + email);
+        console.log('Removed newUser_' + email + ' from localStorage');
+        
+        // Verify the mockUser was set correctly
+        const verifyMockUser = localStorage.getItem('mockUser');
+        console.log('Verification - mockUser in localStorage:', verifyMockUser);
+        
+        return { user: newUser, session: { user: newUser } };
+      } catch (error) {
+        console.error('Error processing new user:', error);
+        throw new Error('Invalid user data');
+      }
     }
     
     // Check demo accounts
@@ -67,7 +106,8 @@ export async function signIn(email: string, password: string) {
       
       if (validPasswords.includes(password)) {
         console.log('Valid demo account password');
-        localStorage.setItem('mockUser', JSON.stringify(mockUser));
+        safeSetLocalStorage('mockUser', JSON.stringify(mockUser));
+        console.log('Set mockUser for demo account:', JSON.stringify(mockUser));
         return { user: mockUser, session: { user: mockUser } };
       } else {
         console.log('Invalid password for demo account');
@@ -120,22 +160,50 @@ export async function signUp(email: string, password: string, fullName: string, 
     return { user: newUser, session: { user: newUser } };
   }
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-        role: role,
+  // Real Supabase registration
+  console.log('Using Supabase registration');
+  
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          role: role,
+        },
       },
-    },
-  });
+    });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      console.error('Supabase signup error:', error);
+      throw new Error(error.message);
+    }
+
+    console.log('Supabase signup successful:', data);
+    
+    // If email confirmation is required, the user won't be signed in automatically
+    if (data.user && !data.session) {
+      console.log('Email confirmation required');
+      return { 
+        user: data.user, 
+        session: null,
+        message: 'Please check your email to confirm your account before signing in.'
+      };
+    }
+    
+    // If user is automatically signed in (email confirmation disabled)
+    if (data.user && data.session) {
+      console.log('User automatically signed in');
+      return data;
+    }
+    
+    return data;
+    
+  } catch (error) {
+    console.error('Error in signUp:', error);
+    throw error;
   }
-
-  return data;
 }
 
 export async function signOut() {
@@ -163,57 +231,144 @@ export async function getCurrentUser(): Promise<User | null> {
     console.log('Mock user from localStorage:', mockUserStr);
     
     if (mockUserStr) {
-      const user = JSON.parse(mockUserStr);
-      console.log('Returning mock user:', user);
-      return user;
+      try {
+        const user = JSON.parse(mockUserStr);
+        console.log('Successfully parsed mock user:', user);
+        
+        // Validate that the user has required fields
+        if (!user.id || !user.email || !user.full_name || !user.role) {
+          console.error('Invalid user data:', user);
+          localStorage.removeItem('mockUser');
+          return null;
+        }
+        
+        return user;
+      } catch (error) {
+        console.error('Error parsing mock user:', error);
+        // Clear invalid mock user
+        localStorage.removeItem('mockUser');
+        return null;
+      }
     }
     
     console.log('No mock user found');
     return null;
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Real Supabase authentication
+  console.log('Using Supabase authentication');
   
-  if (!user) return null;
-
-  // Get user profile from our users table
-  const { data: profile, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-  if (error || !profile) {
+  try {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      console.error('Error getting Supabase user:', userError);
+      return null;
+    }
+    
+    if (!user) {
+      console.log('No Supabase user found');
+      return null;
+    }
+    
+    console.log('Supabase user found:', user.email);
+    
+    // Try to get user profile from our users table
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+    
+    if (profileError) {
+      console.log('Profile not found in users table, creating basic user object:', profileError.message);
+      
+      // If profile doesn't exist, create a basic user object from auth data
+      const basicUser: User = {
+        id: user.id,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+        role: user.user_metadata?.role || 'parent',
+        phone: user.user_metadata?.phone || '',
+        created_at: user.created_at,
+        updated_at: user.updated_at || user.created_at,
+      };
+      
+      console.log('Created basic user object:', basicUser);
+      return basicUser;
+    }
+    
+    if (!profile) {
+      console.log('Profile is null');
+      return null;
+    }
+    
+    console.log('User profile found:', profile);
+    return profile;
+    
+  } catch (error) {
+    console.error('Error in getCurrentUser:', error);
     return null;
   }
-
-  return profile;
 }
 
-export async function updateUserProfile(userId: string, updates: Partial<User>) {
+export async function updateUserProfile(userId: string, updates: Partial<User>): Promise<User> {
+  console.log('updateUserProfile called:', { userId, updates });
+  
   if (!isSupabaseConfigured()) {
-    // Mock profile update
+    console.log('Using mock profile update');
+    
+    // Get current user from localStorage
     const mockUserStr = localStorage.getItem('mockUser');
-    if (mockUserStr) {
-      const mockUser = JSON.parse(mockUserStr);
-      const updatedUser = { ...mockUser, ...updates, updated_at: new Date().toISOString() };
-      localStorage.setItem('mockUser', JSON.stringify(updatedUser));
-      return updatedUser;
+    if (!mockUserStr) {
+      throw new Error('No user session found');
     }
-    throw new Error('User not found');
+    
+    const currentUser = JSON.parse(mockUserStr);
+    if (currentUser.id !== userId) {
+      throw new Error('User ID mismatch');
+    }
+    
+    // Update user data
+    const updatedUser: User = {
+      ...currentUser,
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+    
+    // Update localStorage
+    localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+    
+    // Update in mockUsers array if it exists
+    const userIndex = mockUsers.findIndex(u => u.id === userId);
+    if (userIndex !== -1) {
+      mockUsers[userIndex] = updatedUser;
+    }
+    
+    console.log('Updated mock user:', updatedUser);
+    return updatedUser;
   }
 
+  // Supabase profile update
+  console.log('Using Supabase profile update');
+  
   const { data, error } = await supabase
     .from('users')
-    .update(updates)
+    .update({
+      full_name: updates.full_name,
+      phone: updates.phone,
+      updated_at: new Date().toISOString()
+    })
     .eq('id', userId)
     .select()
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    console.error('Supabase profile update error:', error);
+    throw new Error('Failed to update profile');
   }
 
+  console.log('Updated Supabase user:', data);
   return data;
 }
 

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { 
   CalendarIcon, 
   UserGroupIcon, 
-  CreditCardIcon, 
   DocumentTextIcon,
   PlusIcon,
   ClockIcon,
@@ -15,12 +14,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { User, DashboardStats, TrainerStats, ParentStats } from '@/types';
-import { formatCurrency } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [stats, setStats] = useState<DashboardStats | TrainerStats | ParentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -36,7 +36,6 @@ export default function DashboardPage() {
             total_trainers: 8,
             total_revenue_month: 1250000, // in cents
             pending_bookings: 5,
-            overdue_invoices: 3,
           });
         } else if (currentUser?.role === 'trainer') {
           setStats({
@@ -49,7 +48,7 @@ export default function DashboardPage() {
                 dog_id: '1',
                 trainer_id: currentUser.id,
                 parent_id: '1',
-                booking_type: 'training',
+                booking_type: 'dog_training',
                 status: 'confirmed',
                 start_time: new Date().toISOString(),
                 end_time: new Date(Date.now() + 3600000).toISOString(),
@@ -62,7 +61,6 @@ export default function DashboardPage() {
           setStats({
             total_dogs: 2,
             upcoming_sessions: 3,
-            outstanding_balance: 25000, // in cents
             unread_messages: 1,
           });
         }
@@ -76,10 +74,50 @@ export default function DashboardPage() {
     loadDashboard();
   }, []);
 
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case 'add_dog':
+        router.push('/dogs');
+        break;
+      case 'manage_trainers':
+        router.push('/dogs'); // For now, redirect to dogs page since we don't have a trainers page
+        break;
+      case 'view_bookings':
+        router.push('/bookings');
+        break;
+      case 'view_reports':
+        router.push('/sessions'); // For now, redirect to sessions page since we don't have a reports page
+        break;
+      case 'book_session':
+        router.push('/bookings');
+        break;
+      case 'view_progress':
+        router.push('/sessions');
+        break;
+      case 'contact_trainer':
+        router.push('/messages');
+        break;
+      case 'view_history':
+        router.push('/sessions');
+        break;
+      case 'record_feedback':
+        router.push('/sessions');
+        break;
+      case 'update_availability':
+        router.push('/profile'); // For now, redirect to profile page
+        break;
+      case 'view_profiles':
+        router.push('/dogs');
+        break;
+      default:
+        break;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(0_32_96)]"></div>
       </div>
     );
   }
@@ -121,21 +159,6 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
-              <CreditCardIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(adminStats?.total_revenue_month || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                +12% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Trainers</CardTitle>
               <UserGroupIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -143,6 +166,19 @@ export default function DashboardPage() {
               <div className="text-2xl font-bold">{adminStats?.total_trainers || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Available for bookings
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Bookings</CardTitle>
+              <ClockIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{adminStats?.pending_bookings || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Awaiting confirmation
               </p>
             </CardContent>
           </Card>
@@ -155,21 +191,36 @@ export default function DashboardPage() {
               <CardDescription>Common administrative tasks</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start">
+              <Button 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('add_dog')}
+              >
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Add New Dog
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('manage_trainers')}
+              >
                 <UserGroupIcon className="h-4 w-4 mr-2" />
                 Manage Trainers
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('view_bookings')}
+              >
                 <CalendarIcon className="h-4 w-4 mr-2" />
                 View All Bookings
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <CreditCardIcon className="h-4 w-4 mr-2" />
-                Financial Reports
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('view_reports')}
+              >
+                <DocumentTextIcon className="h-4 w-4 mr-2" />
+                View Reports
               </Button>
             </CardContent>
           </Card>
@@ -190,15 +241,15 @@ export default function DashboardPage() {
               <div className="flex items-center space-x-3">
                 <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
                 <div>
-                  <p className="text-sm font-medium">Payment overdue</p>
-                  <p className="text-xs text-muted-foreground">3 invoices require attention</p>
+                  <p className="text-sm font-medium">Session feedback pending</p>
+                  <p className="text-xs text-muted-foreground">2 sessions need trainer notes</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <ClockIcon className="h-5 w-5 text-blue-500" />
+                <ClockIcon className="h-5 w-5 text-[rgb(0_32_96)]" />
                 <div>
-                  <p className="text-sm font-medium">Session feedback pending</p>
-                  <p className="text-xs text-muted-foreground">2 sessions need trainer notes</p>
+                  <p className="text-sm font-medium">New trainer registered</p>
+                  <p className="text-xs text-muted-foreground">Sarah Johnson joined the team</p>
                 </div>
               </div>
             </CardContent>
@@ -261,7 +312,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-[rgb(0_32_96)] bg-opacity-10 rounded-lg">
                   <div>
                     <p className="font-medium">Max - Training Session</p>
                     <p className="text-sm text-gray-600">9:00 AM - 10:00 AM</p>
@@ -285,15 +336,26 @@ export default function DashboardPage() {
               <CardDescription>Common trainer tasks</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start">
+              <Button 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('record_feedback')}
+              >
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
                 Record Session Feedback
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('update_availability')}
+              >
                 <CalendarIcon className="h-4 w-4 mr-2" />
                 Update Availability
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('view_profiles')}
+              >
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
                 View Dog Profiles
               </Button>
@@ -308,7 +370,7 @@ export default function DashboardPage() {
     const parentStats = stats as ParentStats;
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">My Dogs</CardTitle>
@@ -337,21 +399,6 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Outstanding Balance</CardTitle>
-              <CreditCardIcon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCurrency(parentStats?.outstanding_balance || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Amount due
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
               <DocumentTextIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -372,7 +419,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-3 bg-[rgb(0_32_96)] bg-opacity-10 rounded-lg">
                   <div>
                     <p className="font-medium">Max</p>
                     <p className="text-sm text-gray-600">Golden Retriever • 2 years old</p>
@@ -396,21 +443,36 @@ export default function DashboardPage() {
               <CardDescription>Common parent tasks</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full justify-start">
+              <Button 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('book_session')}
+              >
                 <CalendarIcon className="h-4 w-4 mr-2" />
                 Book New Session
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <CreditCardIcon className="h-4 w-4 mr-2" />
-                View Invoices
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('view_progress')}
+              >
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
                 View Training Progress
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('contact_trainer')}
+              >
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
                 Contact Trainer
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => handleQuickAction('view_history')}
+              >
+                <DocumentTextIcon className="h-4 w-4 mr-2" />
+                View Session History
               </Button>
             </CardContent>
           </Card>

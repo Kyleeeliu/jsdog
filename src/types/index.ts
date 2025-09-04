@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'trainer' | 'parent';
+export type UserRole = 'admin' | 'trainer' | 'parent' | 'behaviorist';
 
 export interface User {
   id: string;
@@ -33,7 +33,9 @@ export interface Dog {
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
-export type BookingType = 'training' | 'daycare' | 'behavioral' | 'socialization';
+export type BookingType = 'pet_care' | 'dog_sitting' | 'dog_training' | 'private_training' | 'consult';
+export type TrainingLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type ConsultType = 'behavioral' | 'training' | 'general';
 
 export interface Booking {
   id: string;
@@ -41,6 +43,8 @@ export interface Booking {
   trainer_id: string;
   parent_id: string;
   booking_type: BookingType;
+  training_level?: TrainingLevel; // For dog training bookings
+  consult_type?: ConsultType; // For consult bookings
   status: BookingStatus;
   start_time: string;
   end_time: string;
@@ -101,7 +105,6 @@ export interface DashboardStats {
   total_trainers: number;
   total_revenue_month: number;
   pending_bookings: number;
-  overdue_invoices: number;
 }
 
 export interface TrainerStats {
@@ -114,8 +117,24 @@ export interface TrainerStats {
 export interface ParentStats {
   total_dogs: number;
   upcoming_sessions: number;
-  outstanding_balance: number;
   unread_messages: number;
+}
+
+// Service definitions
+export interface Service {
+  id: string;
+  name: string;
+  type: BookingType;
+  description: string;
+  duration_minutes: number;
+  price_zar: number; // in ZAR cents
+  color_class: string;
+  icon: string;
+  available_levels?: TrainingLevel[];
+  available_consult_types?: ConsultType[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // Form types
@@ -142,6 +161,8 @@ export interface BookingFormData {
   dog_id: string;
   trainer_id: string;
   booking_type: BookingType;
+  training_level?: TrainingLevel;
+  consult_type?: ConsultType;
   start_time: string;
   end_time: string;
   special_instructions?: string;

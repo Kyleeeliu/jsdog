@@ -22,7 +22,7 @@ const mockBookings: Booking[] = [
     dog_id: '1',
     trainer_id: '1',
     parent_id: '1',
-    booking_type: 'training',
+    booking_type: 'dog_training',
     status: 'confirmed',
     start_time: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
     end_time: new Date(Date.now() + 86400000 + 3600000).toISOString(),
@@ -36,7 +36,7 @@ const mockBookings: Booking[] = [
     dog_id: '2',
     trainer_id: '2',
     parent_id: '2',
-    booking_type: 'behavioral',
+    booking_type: 'consult',
     status: 'pending',
     start_time: new Date(Date.now() + 172800000).toISOString(), // Day after tomorrow
     end_time: new Date(Date.now() + 172800000 + 5400000).toISOString(),
@@ -50,7 +50,7 @@ const mockBookings: Booking[] = [
     dog_id: '3',
     trainer_id: '1',
     parent_id: '3',
-    booking_type: 'daycare',
+    booking_type: 'dog_sitting',
     status: 'completed',
     start_time: new Date(Date.now() - 86400000).toISOString(), // Yesterday
     end_time: new Date(Date.now() - 86400000 + 28800000).toISOString(),
@@ -70,7 +70,7 @@ const getStatusIcon = (status: BookingStatus) => {
     case 'cancelled':
       return <XCircleIcon className="h-5 w-5 text-red-500" />;
     case 'completed':
-      return <CheckCircleIcon className="h-5 w-5 text-blue-500" />;
+      return <CheckCircleIcon className="h-5 w-5 text-[rgb(0_32_96)]" />;
     default:
       return <ClockIcon className="h-5 w-5 text-gray-500" />;
   }
@@ -78,14 +78,16 @@ const getStatusIcon = (status: BookingStatus) => {
 
 const getBookingTypeColor = (type: BookingType) => {
   switch (type) {
-    case 'training':
-      return 'bg-blue-100 text-blue-800';
-    case 'behavioral':
-      return 'bg-orange-100 text-orange-800';
-    case 'daycare':
-      return 'bg-green-100 text-green-800';
-    case 'socialization':
+    case 'dog_training':
+      return 'bg-[rgb(0_32_96)] bg-opacity-10 text-gray-900';
+    case 'private_training':
       return 'bg-purple-100 text-purple-800';
+    case 'dog_sitting':
+      return 'bg-green-100 text-green-800';
+    case 'pet_care':
+      return 'bg-orange-100 text-orange-800';
+    case 'consult':
+      return 'bg-yellow-100 text-yellow-800';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -141,7 +143,7 @@ export default function BookingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(0_32_96)]"></div>
       </div>
     );
   }
@@ -226,6 +228,7 @@ export default function BookingsPage() {
           variant={filter === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('all')}
+          className={filter === 'all' ? '' : 'border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white'}
         >
           All
         </Button>
@@ -233,6 +236,7 @@ export default function BookingsPage() {
           variant={filter === 'pending' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('pending')}
+          className={filter === 'pending' ? '' : 'border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white'}
         >
           Pending
         </Button>
@@ -240,6 +244,7 @@ export default function BookingsPage() {
           variant={filter === 'confirmed' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('confirmed')}
+          className={filter === 'confirmed' ? '' : 'border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white'}
         >
           Confirmed
         </Button>
@@ -247,6 +252,7 @@ export default function BookingsPage() {
           variant={filter === 'completed' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('completed')}
+          className={filter === 'completed' ? '' : 'border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white'}
         >
           Completed
         </Button>
@@ -254,6 +260,7 @@ export default function BookingsPage() {
           variant={filter === 'cancelled' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setFilter('cancelled')}
+          className={filter === 'cancelled' ? '' : 'border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white'}
         >
           Cancelled
         </Button>

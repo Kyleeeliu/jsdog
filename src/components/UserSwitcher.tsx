@@ -69,8 +69,8 @@ export default function UserSwitcher() {
                 onClick={() => switchUser(user)}
               >
                 <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">
-                    <span className="text-xs font-medium text-blue-600">
+                  <div className="w-6 h-6 rounded-full bg-[rgb(0_32_96)] bg-opacity-10 flex items-center justify-center">
+                    <span className="text-xs font-medium text-[rgb(0_32_96)]">
                       {user.full_name.split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>

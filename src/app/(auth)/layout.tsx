@@ -6,11 +6,20 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-[rgb(0_32_96)] from-opacity-5 via-white to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Link href="/" className="inline-block">
-            <h1 className="text-3xl font-bold text-blue-600 mb-2">🐕 Just Dogs</h1>
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center mr-3">
+                <img 
+                  src="/images/icons/logo.png" 
+                  alt="Just Dogs Logo" 
+                  className="w-8 h-8 object-contain"
+                />
+              </div>
+              <h1 className="text-3xl font-bold text-[rgb(0_32_96)]">Just Dogs</h1>
+            </div>
           </Link>
           <p className="text-gray-600">Training Management Platform</p>
         </div>

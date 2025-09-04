@@ -10,7 +10,6 @@ import {
   UserGroupIcon, 
   CalendarIcon, 
   DocumentTextIcon, 
-  CreditCardIcon, 
   ChatBubbleLeftRightIcon,
   UserIcon,
   Bars3Icon,
@@ -25,7 +24,6 @@ const navigation = [
   { name: 'Dogs', href: '/dogs', icon: UserGroupIcon },
   { name: 'Bookings', href: '/bookings', icon: CalendarIcon },
   { name: 'Sessions', href: '/sessions', icon: DocumentTextIcon },
-  { name: 'Invoices', href: '/invoices', icon: CreditCardIcon },
   { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
   { name: 'Profile', href: '/profile', icon: UserIcon },
 ];
@@ -45,12 +43,16 @@ export default function DashboardLayout({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log('Checking authentication...');
+        console.log('Dashboard layout: Checking authentication...');
+        
+        // Add a small delay to ensure localStorage is available and properly set
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
         const currentUser = await getCurrentUser();
-        console.log('Current user:', currentUser);
+        console.log('Dashboard layout: Current user result:', currentUser);
         
         if (!currentUser) {
-          console.log('No user found, redirecting to login');
+          console.log('Dashboard layout: No user found, redirecting to login');
           if (!authChecked) {
             setAuthChecked(true);
             router.push('/login');
@@ -58,11 +60,11 @@ export default function DashboardLayout({
           return;
         }
         
-        console.log('User authenticated:', currentUser.full_name);
+        console.log('Dashboard layout: User authenticated:', currentUser.full_name);
         setUser(currentUser);
         setAuthChecked(true);
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error('Dashboard layout: Auth check error:', error);
         if (!authChecked) {
           setAuthChecked(true);
           router.push('/login');
@@ -72,9 +74,8 @@ export default function DashboardLayout({
       }
     };
 
-    // Add a small delay to ensure localStorage is available
-    const timer = setTimeout(checkAuth, 100);
-    return () => clearTimeout(timer);
+    console.log('Dashboard layout: Starting auth check...');
+    checkAuth();
   }, [router, authChecked]);
 
   const handleSignOut = async () => {
@@ -92,7 +93,7 @@ export default function DashboardLayout({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(0_32_96)] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -104,7 +105,7 @@ export default function DashboardLayout({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(0_32_96)] mx-auto"></div>
           <p className="mt-4 text-gray-600">Redirecting to login...</p>
         </div>
       </div>
@@ -118,7 +119,7 @@ export default function DashboardLayout({
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4">
-            <h1 className="text-xl font-bold text-blue-600">🐕 Just Dogs</h1>
+            <h1 className="text-xl font-bold text-[rgb(0_32_96)]">🐕 Just Dogs</h1>
             <Button
               variant="ghost"
               size="sm"
@@ -134,12 +135,12 @@ export default function DashboardLayout({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                    isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
+                                      className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                      isActive
+                        ? 'bg-[rgb(0_32_96)] text-white'
+                        : 'text-gray-600 hover:bg-[rgb(0_32_96)] hover:bg-opacity-10 hover:text-white'
+                    }`}
+                    onClick={() => setSidebarOpen(false)}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
                   {item.name}
@@ -149,8 +150,8 @@ export default function DashboardLayout({
           </nav>
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center mb-4">
-              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">
+              <div className="h-8 w-8 rounded-full bg-[rgb(0_32_96)] flex items-center justify-center">
+                <span className="text-sm font-medium text-white">
                   {user?.full_name?.charAt(0) || 'U'}
                 </span>
               </div>
@@ -162,7 +163,7 @@ export default function DashboardLayout({
             <Button
               variant="outline"
               size="sm"
-              className="w-full"
+              className="w-full border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white"
               onClick={handleSignOut}
             >
               <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
@@ -176,7 +177,7 @@ export default function DashboardLayout({
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
           <div className="flex h-16 items-center px-4">
-            <h1 className="text-xl font-bold text-blue-600">🐕 Just Dogs</h1>
+            <h1 className="text-xl font-bold text-[rgb(0_32_96)]">🐕 Just Dogs</h1>
           </div>
           <nav className="flex-1 space-y-1 px-2 py-4">
             {navigation.map((item) => {
@@ -187,8 +188,8 @@ export default function DashboardLayout({
                   href={item.href}
                   className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                     isActive
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-[rgb(0_32_96)] text-white'
+                      : 'text-gray-600 hover:bg-[rgb(0_32_96)] hover:bg-opacity-10 hover:text-white'
                   }`}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
@@ -199,8 +200,8 @@ export default function DashboardLayout({
           </nav>
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center mb-4">
-              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">
+              <div className="h-8 w-8 rounded-full bg-[rgb(0_32_96)] flex items-center justify-center">
+                <span className="text-sm font-medium text-white">
                   {user?.full_name?.charAt(0) || 'U'}
                 </span>
               </div>
@@ -212,7 +213,7 @@ export default function DashboardLayout({
             <Button
               variant="outline"
               size="sm"
-              className="w-full"
+              className="w-full border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white"
               onClick={handleSignOut}
             >
               <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />

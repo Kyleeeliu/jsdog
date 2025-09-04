@@ -9,7 +9,8 @@ import {
   MagnifyingGlassIcon,
   ChatBubbleLeftRightIcon,
   UserGroupIcon,
-  ClockIcon
+  ClockIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { Message } from '@/types';
@@ -73,25 +74,35 @@ export default function MessagesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showNewMessageModal, setShowNewMessageModal] = useState(false);
+  const [formData, setFormData] = useState({
+    recipient_id: '',
+    subject: '',
+    content: '',
+    is_announcement: false,
+    target_roles: [] as string[]
+  });
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const currentUser = await getCurrentUser();
+        const user = await getCurrentUser();
+        setCurrentUser(user);
         
         // Filter messages based on user role
-        if (currentUser?.role === 'parent') {
+        if (user?.role === 'parent') {
           // Parents see messages they sent or received
           setMessages(mockMessages.filter(msg => 
-            msg.sender_id === currentUser.id || 
-            msg.recipient_id === currentUser.id ||
+            msg.sender_id === user.id || 
+            msg.recipient_id === user.id ||
             msg.is_announcement
           ));
-        } else if (currentUser?.role === 'trainer') {
+        } else if (user?.role === 'trainer') {
           // Trainers see messages they sent or received
           setMessages(mockMessages.filter(msg => 
-            msg.sender_id === currentUser.id || 
-            msg.recipient_id === currentUser.id ||
+            msg.sender_id === user.id || 
+            msg.recipient_id === user.id ||
             msg.is_announcement
           ));
         } else {
@@ -131,13 +142,60 @@ export default function MessagesPage() {
     if (isAnnouncement) {
       return 'bg-purple-100 text-purple-800';
     }
-    return 'bg-blue-100 text-blue-800';
+    return 'bg-[rgb(0_32_96)] text-white';
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!currentUser) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      sender_id: currentUser.id,
+      recipient_id: formData.is_announcement ? undefined : formData.recipient_id,
+      subject: formData.subject,
+      content: formData.content,
+      is_announcement: formData.is_announcement,
+      target_roles: formData.is_announcement ? formData.target_roles : undefined,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    setMessages(prev => [newMessage, ...prev]);
+    setFormData({
+      recipient_id: '',
+      subject: '',
+      content: '',
+      is_announcement: false,
+      target_roles: []
+    });
+    setShowNewMessageModal(false);
+  };
+
+  const getAvailableRecipients = () => {
+    if (!currentUser) return [];
+    
+    // Filter out current user and show appropriate recipients based on role
+    return mockUsers.filter(user => 
+      user.id !== currentUser.id && 
+      (currentUser.role === 'admin' || 
+       (currentUser.role === 'trainer' && user.role === 'parent') ||
+       (currentUser.role === 'parent' && user.role === 'trainer'))
+    );
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(0_32_96)]"></div>
       </div>
     );
   }
@@ -147,11 +205,12 @@ export default function MessagesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
-          <p className="text-gray-600">
-            Communicate with trainers, parents, and administrators
-          </p>
+          <p className="text-gray-600">Communicate with trainers, parents, and staff</p>
         </div>
-        <Button className="mt-4 sm:mt-0">
+        <Button 
+          onClick={() => setShowNewMessageModal(true)}
+          className="mt-4 sm:mt-0"
+        >
           <PlusIcon className="h-4 w-4 mr-2" />
           New Message
         </Button>
@@ -217,7 +276,7 @@ export default function MessagesPage() {
           <Card 
             key={message.id} 
             className={`hover:shadow-md transition-shadow cursor-pointer ${
-              !message.read_at ? 'border-blue-200 bg-blue-50' : ''
+              !message.read_at ? 'border-[rgb(0_32_96)] border-opacity-20 bg-[rgb(0_32_96)] bg-opacity-5' : ''
             }`}
             onClick={() => setSelectedMessage(message)}
           >
@@ -226,7 +285,7 @@ export default function MessagesPage() {
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
                     {!message.read_at && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-[rgb(0_32_96)] rounded-full"></div>
                     )}
                     <h3 className="font-semibold text-lg">{message.subject}</h3>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMessageTypeColor(message.is_announcement)}`}>
@@ -253,72 +312,211 @@ export default function MessagesPage() {
                     {message.content}
                   </p>
                 </div>
-
-                <div className="flex flex-col space-y-2 ml-4">
-                  <Button size="sm">
-                    View
-                  </Button>
-                  {!message.read_at && (
-                    <Button size="sm" variant="outline">
-                      Mark Read
-                    </Button>
-                  )}
-                </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* Empty State */}
       {filteredMessages.length === 0 && (
         <Card>
-          <CardContent className="text-center py-12">
+          <CardContent className="p-12 text-center">
             <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No messages found</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               {searchTerm ? 'Try adjusting your search terms.' : 'Start a conversation by sending your first message.'}
             </p>
+            {!searchTerm && (
+              <Button onClick={() => setShowNewMessageModal(true)}>
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Send First Message
+              </Button>
+            )}
           </CardContent>
         </Card>
+      )}
+
+      {/* New Message Modal */}
+      {showNewMessageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-900">New Message</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowNewMessageModal(false)}
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {/* Message Type */}
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="messageType"
+                    checked={!formData.is_announcement}
+                    onChange={() => handleInputChange('is_announcement', false)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm font-medium">Direct Message</span>
+                </label>
+                {currentUser?.role === 'admin' && (
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="messageType"
+                      checked={formData.is_announcement}
+                      onChange={() => handleInputChange('is_announcement', true)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm font-medium">Announcement</span>
+                  </label>
+                )}
+              </div>
+
+              {/* Recipient Selection */}
+              {!formData.is_announcement && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    To
+                  </label>
+                  <select
+                    value={formData.recipient_id}
+                    onChange={(e) => handleInputChange('recipient_id', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[rgb(0_32_96)] focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select recipient...</option>
+                    {getAvailableRecipients().map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Target Roles for Announcements */}
+              {formData.is_announcement && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Target Roles
+                  </label>
+                  <div className="space-y-2">
+                    {['parent', 'trainer'].map(role => (
+                      <label key={role} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.target_roles.includes(role)}
+                          onChange={(e) => {
+                            const newRoles = e.target.checked
+                              ? [...formData.target_roles, role]
+                              : formData.target_roles.filter(r => r !== role);
+                            handleInputChange('target_roles', newRoles);
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm capitalize">{role}s</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Subject */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject
+                </label>
+                <Input
+                  type="text"
+                  value={formData.subject}
+                  onChange={(e) => handleInputChange('subject', e.target.value)}
+                  placeholder="Enter message subject..."
+                  required
+                />
+              </div>
+
+              {/* Content */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Message
+                </label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => handleInputChange('content', e.target.value)}
+                  placeholder="Type your message here..."
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[rgb(0_32_96)] focus:border-transparent min-h-[120px] resize-vertical"
+                  required
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowNewMessageModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Send Message
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Message Detail Modal */}
       {selectedMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>{selectedMessage.subject}</CardTitle>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setSelectedMessage(null)}
-                >
-                  Close
-                </Button>
-              </div>
-              <CardDescription>
-                From {getSenderName(selectedMessage.sender_id)} to {getReceiverName(selectedMessage.recipient_id)} • {formatDateTime(selectedMessage.created_at)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-900">{selectedMessage.subject}</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedMessage(null)}
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex items-center space-x-3">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMessageTypeColor(selectedMessage.is_announcement)}`}>
                   {selectedMessage.is_announcement ? 'Announcement' : 'Message'}
                 </span>
+                <span className="text-sm text-gray-500">
+                  {formatDateTime(selectedMessage.created_at)}
+                </span>
               </div>
-              <div className="prose max-w-none">
-                <p className="whitespace-pre-wrap">{selectedMessage.content}</p>
-              </div>
-              <div className="flex space-x-2 mt-6">
-                <Button>Reply</Button>
-                <Button variant="outline">Forward</Button>
-                {!selectedMessage.read_at && (
-                  <Button variant="outline">Mark as Read</Button>
+              
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">From:</span> {getSenderName(selectedMessage.sender_id)}
+                </p>
+                {!selectedMessage.is_announcement && (
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">To:</span> {getReceiverName(selectedMessage.recipient_id)}
+                  </p>
                 )}
               </div>
-            </CardContent>
-          </Card>
+              
+              <div className="border-t pt-4">
+                <p className="text-gray-700 whitespace-pre-wrap">
+                  {selectedMessage.content}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
