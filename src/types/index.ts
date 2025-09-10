@@ -33,6 +33,7 @@ export interface Dog {
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type SessionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
 export type BookingType = 'pet_care' | 'dog_sitting' | 'dog_training' | 'private_training' | 'consult';
 export type TrainingLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type ConsultType = 'behavioral' | 'training' | 'general';
@@ -58,8 +59,11 @@ export interface Session {
   id: string;
   booking_id: string;
   trainer_id: string;
+  parent_id: string;
   dog_id: string;
-  attended: boolean;
+  status: SessionStatus;
+  start_time: string;
+  end_time: string;
   notes: string;
   progress_rating?: number; // 1-5 scale
   behavior_rating?: number; // 1-5 scale

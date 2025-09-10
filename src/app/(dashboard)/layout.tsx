@@ -22,8 +22,7 @@ import { User } from '@/types';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'Dogs', href: '/dogs', icon: UserGroupIcon },
-  { name: 'Bookings', href: '/bookings', icon: CalendarIcon },
-  { name: 'Sessions', href: '/sessions', icon: DocumentTextIcon },
+  { name: 'Bookings & Sessions', href: '/bookings-sessions', icon: CalendarIcon },
   { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
   { name: 'Profile', href: '/profile', icon: UserIcon },
 ];

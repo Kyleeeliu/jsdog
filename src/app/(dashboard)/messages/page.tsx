@@ -363,7 +363,7 @@ export default function MessagesPage() {
                     onChange={() => handleInputChange('is_announcement', false)}
                     className="mr-2"
                   />
-                  <span className="text-sm font-medium">Direct Message</span>
+                  <span className="text-sm font-medium text-gray-900">Direct Message</span>
                 </label>
                 {currentUser?.role === 'admin' && (
                   <label className="flex items-center">
@@ -374,7 +374,7 @@ export default function MessagesPage() {
                       onChange={() => handleInputChange('is_announcement', true)}
                       className="mr-2"
                     />
-                    <span className="text-sm font-medium">Announcement</span>
+                    <span className="text-sm font-medium text-gray-900">Announcement</span>
                   </label>
                 )}
               </div>
@@ -388,7 +388,7 @@ export default function MessagesPage() {
                   <select
                     value={formData.recipient_id}
                     onChange={(e) => handleInputChange('recipient_id', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[rgb(0_32_96)] focus:border-transparent"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[rgb(0_32_96)] focus:border-transparent text-gray-900 bg-white"
                     required
                   >
                     <option value="">Select recipient...</option>
@@ -421,7 +421,7 @@ export default function MessagesPage() {
                           }}
                           className="mr-2"
                         />
-                        <span className="text-sm capitalize">{role}s</span>
+                        <span className="text-sm capitalize text-gray-900">{role}s</span>
                       </label>
                     ))}
                   </div>
@@ -451,7 +451,7 @@ export default function MessagesPage() {
                   value={formData.content}
                   onChange={(e) => handleInputChange('content', e.target.value)}
                   placeholder="Type your message here..."
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[rgb(0_32_96)] focus:border-transparent min-h-[120px] resize-vertical"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[rgb(0_32_96)] focus:border-transparent min-h-[120px] resize-vertical text-gray-900 bg-white"
                   required
                 />
               </div>

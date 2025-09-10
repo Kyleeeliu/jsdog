@@ -79,7 +79,7 @@ const getStatusIcon = (status: BookingStatus) => {
 const getBookingTypeColor = (type: BookingType) => {
   switch (type) {
     case 'dog_training':
-      return 'bg-[rgb(0_32_96)] bg-opacity-10 text-gray-900';
+      return 'bg-[rgb(0_32_96)] text-white';
     case 'private_training':
       return 'bg-purple-100 text-purple-800';
     case 'dog_sitting':
@@ -310,7 +310,7 @@ export default function BookingsPage() {
                       {booking.status}
                     </span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getBookingTypeColor(booking.booking_type)}`}>
-                      {booking.booking_type}
+                      {booking.booking_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </span>
                   </div>
                 </div>

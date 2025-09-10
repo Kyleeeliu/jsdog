@@ -1,8 +1,31 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import DogAssessmentBot from '@/components/DogAssessmentBot';
 
 export default function Home() {
+  const [showAssessmentBot, setShowAssessmentBot] = useState(false);
+
+  const handleAssessmentComplete = (result: any) => {
+    // Store the assessment result in localStorage for later use
+    const existingAssessments = JSON.parse(localStorage.getItem('dogAssessments') || '[]');
+    const newAssessment = {
+      ...result,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      status: 'pending_login' // Will be completed when user logs in
+    };
+    existingAssessments.push(newAssessment);
+    localStorage.setItem('dogAssessments', JSON.stringify(existingAssessments));
+    setShowAssessmentBot(false);
+    
+    // Show success message
+    alert('Assessment completed! Please log in to create your dog profile and view recommendations.');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[rgb(0_32_96)] from-opacity-5 via-white to-gray-50">
       {/* Header */}
@@ -58,11 +81,30 @@ export default function Home() {
               Every Need
             </span>
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
             From pet care to specialized training, we provide comprehensive dog services 
             with professional management. Track progress, manage bookings, and ensure 
             the best care for every dog in your care.
           </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
+            <Button 
+              onClick={() => setShowAssessmentBot(true)}
+              size="lg" 
+              className="text-lg px-8 py-4 bg-[rgb(0_32_96)] hover:bg-[rgb(0_24_72)] transition-colors shadow-lg hover:shadow-xl"
+            >
+              🐕 Get Personalized Recommendations
+            </Button>
+            <Link href="/register">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-lg px-8 py-4 border-2 border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white transition-colors"
+              >
+                Sign Up
+              </Button>
+            </Link>
+          </div>
 
           
           {/* Trust Indicators */}
@@ -100,22 +142,22 @@ export default function Home() {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
               <CardHeader className="pb-4">
                 <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl text-white">🧠</span>
+                  <span className="text-2xl text-white">🎯</span>
                 </div>
-                <CardTitle className="text-xl text-[rgb(0_32_96)]">Behavioral Consultation (Mini)</CardTitle>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">Private Training</CardTitle>
                 <CardDescription className="text-base leading-relaxed text-gray-700">
-                  With one of our Registered Qualified Trainers or a Behaviourist. Covers basic behavior issues and life skills.
+                  With one of our Registered Qualified Trainers AFTER a consultation or social assessment. Recommended after a complex or mini consultation, or a social assessment.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R450 per dog</p>
-                  <p className="text-sm text-gray-600">1-1.5hrs session with practical advice</p>
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R250 per 1 hr session</p>
+                  <p className="text-sm text-gray-600">+ R150 per additional dog in the same session</p>
                   <ul className="text-sm text-gray-600 space-y-1 mt-3">
-                    <li>• Home or office location</li>
-                    <li>• Mini summary report via WhatsApp</li>
-                    <li>• Action plan included</li>
-                    <li>• Extra dog: R150 additional</li>
+                    <li>• Held at varying locations or at home</li>
+                    <li>• Focuses on empowering you to help your dog thrive</li>
+                    <li>• Covers manners, basic training, social and life skills</li>
+                    <li>• Any reactivity requires Complex Consultation first</li>
                   </ul>
                 </div>
               </CardContent>
@@ -124,22 +166,22 @@ export default function Home() {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
               <CardHeader className="pb-4">
                 <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl text-white">🐕</span>
+                  <span className="text-2xl text-white">📚</span>
                 </div>
-                <CardTitle className="text-xl text-[rgb(0_32_96)]">Social Assessment</CardTitle>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">Tutoring (Private training add on)</CardTitle>
                 <CardDescription className="text-base leading-relaxed text-gray-700">
-                  With an allocated Registered Qualified trainer or Behaviourist for dogs with social anxiety, reactivity, or antisocial behaviour.
+                  With one of our passionate qualified trainers. For socialisation practice, manners, basic training, walking and life skills for any aged dog.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R550 per dog</p>
-                  <p className="text-sm text-gray-600">1-1.5hrs session with on/off lead assessments</p>
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R200 per session</p>
+                  <p className="text-sm text-gray-600">R150 per additional dog within same time frame</p>
                   <ul className="text-sm text-gray-600 space-y-1 mt-3">
-                    <li>• Office or local enclosed park location</li>
-                    <li>• On lead and off lead assessments</li>
-                    <li>• Summary report included</li>
-                    <li>• Extra dog: R150 additional</li>
+                    <li>• Your dog is worked with at your home, or collected</li>
+                    <li>• Sessions are 40 minutes long (not including travel time)</li>
+                    <li>• Feedback given after each session via WhatsApp group</li>
+                    <li>• You will still be required to join some sessions</li>
                   </ul>
                 </div>
               </CardContent>
@@ -148,22 +190,22 @@ export default function Home() {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
               <CardHeader className="pb-4">
                 <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl text-white">🔧</span>
+                  <span className="text-2xl text-white">🎪</span>
                 </div>
-                <CardTitle className="text-xl text-[rgb(0_32_96)]">Behavioral Consultation (Complex)</CardTitle>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">Private Activity & Enrichment Service</CardTitle>
                 <CardDescription className="text-base leading-relaxed text-gray-700">
-                  With our Registered Canine Behaviour Practitioner (behaviourist) for complex problem behaviours in the home.
+                  With a passionate, pet first aid trained handler or trainer. For additional exercise, stimulation and fun! Great for focus and confidence building.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R800 per dog</p>
-                  <p className="text-sm text-gray-600">1.5hrs home session with full assessment</p>
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R200 for a full 1.5 hour session</p>
+                  <p className="text-sm text-gray-600">Handler brings their own equipment, treats and toys</p>
                   <ul className="text-sm text-gray-600 space-y-1 mt-3">
-                    <li>• Home location only</li>
-                    <li>• Full summary report via email</li>
-                    <li>• Comprehensive action plan</li>
-                    <li>• Follow-up sessions: R300 each</li>
+                    <li>• A handler comes to your home and works in your yard</li>
+                    <li>• Physical activities, mental stimulation activities included</li>
+                    <li>• Educare brain training for self-control and lifestyle skills</li>
+                    <li>• Tailored to your dog&apos;s needs and preferences</li>
                   </ul>
                 </div>
               </CardContent>
@@ -172,22 +214,118 @@ export default function Home() {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
               <CardHeader className="pb-4">
                 <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl text-white">🤝</span>
+                  <span className="text-2xl text-white">🏃</span>
                 </div>
-                <CardTitle className="text-xl text-[rgb(0_32_96)]">Introductions</CardTitle>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">The Dog Jog Walking and Socialisation Service</CardTitle>
                 <CardDescription className="text-base leading-relaxed text-gray-700">
-                  With one of our experienced senior trainers for new furry family members or blended family packs.
+                  With a passionate, pet first aid trained handler or trainer. For exercise, outdoor stimulation and fun, social playdates with compatible friends.
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R400 initial session</p>
-                  <p className="text-sm text-gray-600">1 hour session with practical training and advice</p>
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R100 per walk for one dog</p>
+                  <p className="text-sm text-gray-600">+ R45 per additional dog</p>
                   <ul className="text-sm text-gray-600 space-y-1 mt-3">
-                    <li>• Neutral space or enclosed park location</li>
-                    <li>• Follow-up lessons: R200 per hour</li>
-                    <li>• Additional dogs: R100 if input required</li>
-                    <li>• Action plan included</li>
+                    <li>• Your dog/s are collected from your house</li>
+                    <li>• Varying locations (beach, vlei, parks, residential)</li>
+                    <li>• Walks are 40 minutes long (not including travel time)</li>
+                    <li>• Social walks are popular, but private walks available</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl text-white">🏠</span>
+                </div>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">Pet Care & Sitting</CardTitle>
+                <CardDescription className="text-base leading-relaxed text-gray-700">
+                  Professional pet care services including feeding, walking, and overnight care for your beloved pets.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">Starting from R150/day</p>
+                  <p className="text-sm text-gray-600">Flexible scheduling and personalized care</p>
+                  <ul className="text-sm text-gray-600 space-y-1 mt-3">
+                    <li>• Daily feeding and medication</li>
+                    <li>• Regular exercise and playtime</li>
+                    <li>• Overnight care available</li>
+                    <li>• Photo updates included</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl text-white">🎓</span>
+                </div>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">Group Training Classes</CardTitle>
+                <CardDescription className="text-base leading-relaxed text-gray-700">
+                  Structured group training sessions for socialization and basic obedience training in a controlled environment.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R300 per 6-week course</p>
+                  <p className="text-sm text-gray-600">Small group sizes for personalized attention</p>
+                  <ul className="text-sm text-gray-600 space-y-1 mt-3">
+                    <li>• Basic obedience commands</li>
+                    <li>• Socialization with other dogs</li>
+                    <li>• Professional trainer guidance</li>
+                    <li>• Take-home training materials</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl text-white">🏥</span>
+                </div>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">Health & Wellness</CardTitle>
+                <CardDescription className="text-base leading-relaxed text-gray-700">
+                  Comprehensive health monitoring and wellness programs to keep your dog in optimal condition.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R200 per wellness check</p>
+                  <p className="text-sm text-gray-600">Regular health assessments and care plans</p>
+                  <ul className="text-sm text-gray-600 space-y-1 mt-3">
+                    <li>• Weight and nutrition monitoring</li>
+                    <li>• Exercise and activity tracking</li>
+                    <li>• Health record maintenance</li>
+                    <li>• Vet coordination services</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl text-white">🎯</span>
+                </div>
+                <CardTitle className="text-xl text-[rgb(0_32_96)]">Specialized Training</CardTitle>
+                <CardDescription className="text-base leading-relaxed text-gray-700">
+                  Advanced training programs for specific needs including therapy dog preparation and specialized behavioral modification.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="text-lg font-bold text-[rgb(0_32_96)]">R500 per specialized program</p>
+                  <p className="text-sm text-gray-600">Customized training for specific requirements</p>
+                  <ul className="text-sm text-gray-600 space-y-1 mt-3">
+                    <li>• Therapy dog certification prep</li>
+                    <li>• Service dog training basics</li>
+                    <li>• Advanced behavioral modification</li>
+                    <li>• Specialized skill development</li>
                   </ul>
                 </div>
               </CardContent>
@@ -198,30 +336,6 @@ export default function Home() {
 
 
 
-      {/* CTA Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[rgb(0_32_96)]">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Dog Services Business?
-          </h2>
-          <p className="text-lg sm:text-xl text-white text-opacity-90 mb-10 leading-relaxed">
-            Join Just Dogs and start managing your dog care and training services more efficiently today. 
-            Experience the difference professional management makes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-4 bg-white text-[rgb(0_32_96)] hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl">
-                Get Started Now
-              </Button>
-            </Link>
-            <Link href="/login">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-[rgb(0_32_96)] transition-colors">
-                Try Demo
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16 px-4 sm:px-6 lg:px-8">
@@ -270,6 +384,13 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Dog Assessment Bot */}
+      <DogAssessmentBot
+        isOpen={showAssessmentBot}
+        onClose={() => setShowAssessmentBot(false)}
+        onComplete={handleAssessmentComplete}
+      />
     </div>
   );
 }

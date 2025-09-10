@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import DogAssessmentBot from '@/components/DogAssessmentBot';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon,
   UserGroupIcon,
   CalendarIcon,
   HeartIcon,
-  XMarkIcon
+  XMarkIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { User, Dog } from '@/types';
@@ -85,6 +87,7 @@ export default function DogsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showAssessmentBot, setShowAssessmentBot] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     breed: '',
@@ -114,6 +117,16 @@ export default function DogsPage() {
           // Admins and trainers see all dogs
           setDogs(mockDogs);
         }
+
+        // Check for pending assessments from localStorage
+        const pendingAssessments = JSON.parse(localStorage.getItem('dogAssessments') || '[]');
+        if (pendingAssessments.length > 0) {
+          // Show notification about pending assessments
+          const pendingCount = pendingAssessments.filter((a: any) => a.status === 'pending_login').length;
+          if (pendingCount > 0) {
+            alert(`You have ${pendingCount} pending dog assessment(s). Click "Complete Assessment" to create dog profiles.`);
+          }
+        }
       } catch (error) {
         console.error('Error loading user:', error);
       } finally {
@@ -126,6 +139,42 @@ export default function DogsPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAssessmentComplete = (result: any) => {
+    // Ask for dog name
+    const dogName = prompt('What is your dog\'s name?');
+    if (!dogName) return; // User cancelled
+    
+    // Create a new dog profile based on the assessment
+    const newDog: Dog = {
+      id: (dogs.length + 1).toString(),
+      name: dogName,
+      breed: result.dogProfile.breed,
+      age: result.dogProfile.age.includes('Puppy') ? 0.5 : 
+           result.dogProfile.age.includes('Young') ? 2 : 
+           result.dogProfile.age.includes('Adult') ? 5 : 8,
+      weight: result.dogProfile.size.includes('Small') ? 15 : 
+              result.dogProfile.size.includes('Medium') ? 40 : 
+              result.dogProfile.size.includes('Large') ? 80 : 120,
+      owner_id: user?.id || '1',
+      medical_notes: result.dogProfile.healthIssues.length > 0 ? 
+        `Health issues: ${result.dogProfile.healthIssues.join(', ')}` : undefined,
+      behavioral_notes: result.dogProfile.behaviorIssues.length > 0 ? 
+        `Behavioral issues: ${result.dogProfile.behaviorIssues.join(', ')}. Recommended program: ${result.recommendations.primaryProgram}` : 
+        `Recommended program: ${result.recommendations.primaryProgram}`,
+      preferences: `Energy level: ${result.dogProfile.energyLevel}. Environment: ${result.dogProfile.environment}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    
+    setDogs(prev => [...prev, newDog]);
+    setShowAssessmentBot(false);
+    
+    // Remove the assessment from localStorage
+    const assessments = JSON.parse(localStorage.getItem('dogAssessments') || '[]');
+    const updatedAssessments = assessments.filter((a: any) => a.id !== result.id);
+    localStorage.setItem('dogAssessments', JSON.stringify(updatedAssessments));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -203,13 +252,22 @@ export default function DogsPage() {
           </p>
         </div>
         {(user?.role === 'admin' || user?.role === 'parent') && (
-          <Button 
-            className="mt-4 sm:mt-0"
-            onClick={() => setShowAddModal(true)}
-          >
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Add New Dog
-          </Button>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 sm:mt-0">
+            <Button 
+              onClick={() => setShowAssessmentBot(true)}
+              variant="outline"
+              className="border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white"
+            >
+              <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+              AI Assessment
+            </Button>
+            <Button 
+              onClick={() => setShowAddModal(true)}
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Add New Dog
+            </Button>
+          </div>
         )}
       </div>
 
@@ -480,6 +538,13 @@ export default function DogsPage() {
           </Card>
         </div>
       )}
+
+      {/* Dog Assessment Bot */}
+      <DogAssessmentBot
+        isOpen={showAssessmentBot}
+        onClose={() => setShowAssessmentBot(false)}
+        onComplete={handleAssessmentComplete}
+      />
     </div>
   );
 }
