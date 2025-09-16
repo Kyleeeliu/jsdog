@@ -282,9 +282,27 @@ export default function DogAssessmentBot({ isOpen, onClose, onComplete }: DogAss
     }
   };
 
+  const generateAssessmentCode = () => {
+    // Generate a 6-digit code
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   const handleSubmit = () => {
     if (result) {
-      onComplete(result);
+      const code = generateAssessmentCode();
+      
+      // Store assessment with code in localStorage
+      const assessmentData = {
+        ...result,
+        code: code,
+        timestamp: new Date().toISOString(),
+        id: Date.now().toString()
+      };
+      
+      localStorage.setItem(`assessment_${code}`, JSON.stringify(assessmentData));
+      
+      // Pass the code along with the result
+      onComplete({ ...result, code });
       onClose();
     }
   };
@@ -454,6 +472,14 @@ export default function DogAssessmentBot({ isOpen, onClose, onComplete }: DogAss
               <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Assessment Complete!</h3>
               <p className="text-gray-600">Here are our personalized recommendations for your dog</p>
+              {result?.code && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-gray-700 mb-2">Save this code to complete your dog profile after logging in:</p>
+                  <div className="text-2xl font-bold text-[rgb(0_32_96)] bg-white px-4 py-2 rounded border-2 border-[rgb(0_32_96)] inline-block">
+                    {result.code}
+                  </div>
+                </div>
+              )}
             </div>
 
             {result && (

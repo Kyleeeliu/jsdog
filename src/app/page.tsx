@@ -10,20 +10,14 @@ export default function Home() {
   const [showAssessmentBot, setShowAssessmentBot] = useState(false);
 
   const handleAssessmentComplete = (result: any) => {
-    // Store the assessment result in localStorage for later use
-    const existingAssessments = JSON.parse(localStorage.getItem('dogAssessments') || '[]');
-    const newAssessment = {
-      ...result,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      status: 'pending_login' // Will be completed when user logs in
-    };
-    existingAssessments.push(newAssessment);
-    localStorage.setItem('dogAssessments', JSON.stringify(existingAssessments));
     setShowAssessmentBot(false);
     
-    // Show success message
-    alert('Assessment completed! Please log in to create your dog profile and view recommendations.');
+    // Show success message with code
+    if (result.code) {
+      alert(`Assessment completed! Your code is: ${result.code}\n\nPlease log in and enter this code in the Dogs section to create your dog profile.`);
+    } else {
+      alert('Assessment completed! Please log in to create your dog profile and view recommendations.');
+    }
   };
 
   return (
@@ -47,12 +41,11 @@ export default function Home() {
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
+              <Link href="#team" className="text-gray-600 hover:text-[rgb(0_32_96)] font-medium transition-colors">
+                Our Team
+              </Link>
               <Link href="#services" className="text-gray-600 hover:text-[rgb(0_32_96)] font-medium transition-colors">
                 Services
-              </Link>
-
-              <Link href="#pricing" className="text-gray-600 hover:text-[rgb(0_32_96)] font-medium transition-colors">
-                Pricing
               </Link>
             </nav>
             <div className="flex items-center space-x-3">
@@ -121,6 +114,121 @@ export default function Home() {
               <div className="text-2xl font-bold text-[rgb(0_32_96)] mb-2">98%</div>
               <div className="text-sm text-gray-600">Satisfaction Rate</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Meet the Trainers */}
+      <section id="team" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Meet Our Expert Team
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Qualified professionals dedicated to providing the best care for your dogs
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {/* Lucy - Founder */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">L</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Lucy</h3>
+                <p className="text-[rgb(0_32_96)] font-medium mb-3">Founder & Lead Behaviourist</p>
+                <p className="text-gray-600 text-sm">
+                  BSC(Hons) Animal Science, Behaviour and Welfare. Training dogs since 2005, 
+                  founded Just Dogs in 2014. Oversees all operations and ensures every dog receives expert care.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Andy */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">A</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Andy</h3>
+                <p className="text-[rgb(0_32_96)] font-medium mb-3">Qualified Dog Behaviourist</p>
+                <p className="text-gray-600 text-sm">
+                  Registered Dog Behaviourist specializing in behaviour modification, training, 
+                  and puppy school. Passionate about helping dogs and owners thrive together.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Robyn */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">R</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Robyn</h3>
+                <p className="text-[rgb(0_32_96)] font-medium mb-3">Animal Behaviourist</p>
+                <p className="text-gray-600 text-sm">
+                  COAPE International qualified behaviourist with a science-based, force-free approach. 
+                  Committed to strengthening the human-canine bond through understanding and support.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Nicole */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">N</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Nicole</h3>
+                <p className="text-[rgb(0_32_96)] font-medium mb-3">Canine Behaviourist & Trainer</p>
+                <p className="text-gray-600 text-sm">
+                  Qualified Canine Behaviourist with Veterinary Physiotherapy background. 
+                  Specializes in individual training, group classes, and Medical Alert Dogs.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Chelsey */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">C</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Chelsey</h3>
+                <p className="text-[rgb(0_32_96)] font-medium mb-3">Senior Handler</p>
+                <p className="text-gray-600 text-sm">
+                  Experienced handler working with 38+ dogs weekly since 2017. 
+                  Passionate about providing exceptional care and building strong relationships with every dog.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Olivia */}
+            <Card className="text-center hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">O</span>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Olivia</h3>
+                <p className="text-[rgb(0_32_96)] font-medium mb-3">Dog Trainer & Behaviourist</p>
+                <p className="text-gray-600 text-sm">
+                  Specialized in Medical Alert Dogs training and behaviour modification. 
+                  Former film industry professional who found her calling in canine care.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">
+              Our team is COAPE/EthologyAc qualified and SABCAP registered
+            </p>
+            <p className="text-sm text-gray-500">
+              Medipet recognizes Just Dogs as a registered behaviour training company
+            </p>
           </div>
         </div>
       </section>
@@ -338,49 +446,29 @@ export default function Home() {
 
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 px-4 sm:px-6 lg:px-8">
+      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <h3 className="text-xl font-bold flex items-center gap-2">
                 <span className="text-2xl">🐕</span>
                 <span>Just Dogs</span>
               </h3>
-              <p className="text-gray-400 leading-relaxed">
-                Making dog care and training management simple and efficient for everyone. 
-                Professional tools for professional results.
-              </p>
             </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Services</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">Pet Care & Sitting</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Dog Training</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Private Training</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Consultations</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Support</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">Help Center</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Contact Us</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Documentation</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Training</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4 text-lg">Company</h4>
-              <ul className="space-y-3 text-gray-400">
-                <li className="hover:text-white transition-colors cursor-pointer">About Us</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Privacy Policy</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Terms of Service</li>
-                <li className="hover:text-white transition-colors cursor-pointer">Careers</li>
-              </ul>
+            <div className="flex flex-wrap justify-center gap-6 text-gray-400">
+              <Link href="/contact" className="hover:text-white transition-colors">
+                Contact Us
+              </Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="hover:text-white transition-colors">
+                Terms of Service
+              </Link>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>© 2024 Just Dogs. All rights reserved. Professional dog services management platform.</p>
+          <div className="border-t border-gray-800 mt-8 pt-6 text-center text-gray-400">
+            <p>© 2024 Just Dogs. All rights reserved.</p>
           </div>
         </div>
       </footer>

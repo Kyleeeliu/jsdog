@@ -12,74 +12,15 @@ import {
   CalendarIcon,
   HeartIcon,
   XMarkIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  KeyIcon
 } from '@heroicons/react/24/outline';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { User, Dog } from '@/types';
+import { getAllDogs, getDogsByOwner, createDog, searchDogs } from '@/lib/database/dogs';
 
-// Mock data for demonstration
-const mockDogs: Dog[] = [
-  {
-    id: '1',
-    name: 'Max',
-    breed: 'Golden Retriever',
-    age: 2,
-    weight: 30,
-    owner_id: '1',
-    medical_notes: 'No known medical issues. Up to date on vaccinations.',
-    behavioral_notes: 'Friendly and eager to learn. Responds well to positive reinforcement.',
-    vaccine_records: 'All vaccinations up to date. Last rabies shot: 6 months ago.',
-    preferences: 'Loves treats, especially chicken. Enjoys water activities.',
-    emergency_contact: {
-      name: 'Sarah Johnson',
-      phone: '+27 82 123 4567',
-      relationship: 'Owner'
-    },
-    photo_url: '/api/placeholder/150/150',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Luna',
-    breed: 'Border Collie',
-    age: 1,
-    weight: 20,
-    owner_id: '2',
-    medical_notes: 'Allergic to certain grains. Requires grain-free diet.',
-    behavioral_notes: 'High energy, very intelligent. Needs mental stimulation.',
-    vaccine_records: 'All vaccinations up to date. Last checkup: 3 months ago.',
-    preferences: 'Enjoys agility training and puzzle toys.',
-    emergency_contact: {
-      name: 'Mike Smith',
-      phone: '+27 83 987 6543',
-      relationship: 'Owner'
-    },
-    photo_url: '/api/placeholder/150/150',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Buddy',
-    breed: 'Labrador Retriever',
-    age: 3,
-    weight: 35,
-    owner_id: '3',
-    medical_notes: 'Hip dysplasia - requires gentle exercise.',
-    behavioral_notes: 'Calm and patient. Great with children.',
-    vaccine_records: 'All vaccinations up to date.',
-    preferences: 'Gentle walks and swimming.',
-    emergency_contact: {
-      name: 'Lisa Brown',
-      phone: '+27 84 555 1234',
-      relationship: 'Owner'
-    },
-    photo_url: '/api/placeholder/150/150',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
+// Mock data for demonstration - starting with empty array
+const mockDogs: Dog[] = [];
 
 export default function DogsPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -88,6 +29,8 @@ export default function DogsPage() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAssessmentBot, setShowAssessmentBot] = useState(false);
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [assessmentCode, setAssessmentCode] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     breed: '',
@@ -109,24 +52,18 @@ export default function DogsPage() {
         const currentUser = await getCurrentUser();
         setUser(currentUser);
         
-        // Filter dogs based on user role
+        // Load dogs from database based on user role
         if (currentUser?.role === 'parent') {
           // Parents only see their own dogs
-          setDogs(mockDogs.filter(dog => dog.owner_id === currentUser.id));
+          const userDogs = getDogsByOwner(currentUser.id);
+          setDogs(userDogs);
         } else {
           // Admins and trainers see all dogs
-          setDogs(mockDogs);
+          const allDogs = getAllDogs();
+          setDogs(allDogs);
         }
 
-        // Check for pending assessments from localStorage
-        const pendingAssessments = JSON.parse(localStorage.getItem('dogAssessments') || '[]');
-        if (pendingAssessments.length > 0) {
-          // Show notification about pending assessments
-          const pendingCount = pendingAssessments.filter((a: any) => a.status === 'pending_login').length;
-          if (pendingCount > 0) {
-            alert(`You have ${pendingCount} pending dog assessment(s). Click "Complete Assessment" to create dog profiles.`);
-          }
-        }
+        // No need to check for pending assessments - users will enter codes manually
       } catch (error) {
         console.error('Error loading user:', error);
       } finally {
@@ -146,9 +83,8 @@ export default function DogsPage() {
     const dogName = prompt('What is your dog\'s name?');
     if (!dogName) return; // User cancelled
     
-    // Create a new dog profile based on the assessment
-    const newDog: Dog = {
-      id: (dogs.length + 1).toString(),
+    // Create a new dog profile in database based on the assessment
+    const newDog = createDog({
       name: dogName,
       breed: result.dogProfile.breed,
       age: result.dogProfile.age.includes('Puppy') ? 0.5 : 
@@ -164,17 +100,81 @@ export default function DogsPage() {
         `Behavioral issues: ${result.dogProfile.behaviorIssues.join(', ')}. Recommended program: ${result.recommendations.primaryProgram}` : 
         `Recommended program: ${result.recommendations.primaryProgram}`,
       preferences: `Energy level: ${result.dogProfile.energyLevel}. Environment: ${result.dogProfile.environment}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+      photo_url: '/api/placeholder/150/150',
+    });
+
+    // Reload dogs from database to get the updated list
+    if (user?.role === 'parent') {
+      const userDogs = getDogsByOwner(user.id);
+      setDogs(userDogs);
+    } else {
+      const allDogs = getAllDogs();
+      setDogs(allDogs);
+    }
     
-    setDogs(prev => [...prev, newDog]);
     setShowAssessmentBot(false);
-    
-    // Remove the assessment from localStorage
-    const assessments = JSON.parse(localStorage.getItem('dogAssessments') || '[]');
-    const updatedAssessments = assessments.filter((a: any) => a.id !== result.id);
-    localStorage.setItem('dogAssessments', JSON.stringify(updatedAssessments));
+  };
+
+  const handleCodeSubmit = () => {
+    if (!assessmentCode.trim()) {
+      alert('Please enter an assessment code.');
+      return;
+    }
+
+    // Check if assessment exists in localStorage
+    const assessmentData = localStorage.getItem(`assessment_${assessmentCode}`);
+    if (!assessmentData) {
+      alert('Invalid assessment code. Please check the code and try again.');
+      return;
+    }
+
+    try {
+      const assessment = JSON.parse(assessmentData);
+      
+      // Ask for dog name
+      const dogName = prompt('What is your dog\'s name?');
+      if (!dogName) return; // User cancelled
+      
+      // Create a new dog profile in database based on the assessment
+      const newDog = createDog({
+        name: dogName,
+        breed: assessment.dogProfile.breed,
+        age: assessment.dogProfile.age.includes('Puppy') ? 0.5 : 
+             assessment.dogProfile.age.includes('Young') ? 2 : 
+             assessment.dogProfile.age.includes('Adult') ? 5 : 8,
+        weight: assessment.dogProfile.size.includes('Small') ? 15 : 
+                assessment.dogProfile.size.includes('Medium') ? 40 : 
+                assessment.dogProfile.size.includes('Large') ? 80 : 120,
+        owner_id: user?.id || '1',
+        medical_notes: assessment.dogProfile.healthIssues.length > 0 ? 
+          `Health issues: ${assessment.dogProfile.healthIssues.join(', ')}` : undefined,
+        behavioral_notes: assessment.dogProfile.behaviorIssues.length > 0 ? 
+          `Behavioral issues: ${assessment.dogProfile.behaviorIssues.join(', ')}. Recommended program: ${assessment.recommendations.primaryProgram}` : 
+          `Recommended program: ${assessment.recommendations.primaryProgram}`,
+        preferences: `Energy level: ${assessment.dogProfile.energyLevel}. Environment: ${assessment.dogProfile.environment}`,
+        photo_url: '/api/placeholder/150/150',
+      });
+
+      // Reload dogs from database to get the updated list
+      if (user?.role === 'parent') {
+        const userDogs = getDogsByOwner(user.id);
+        setDogs(userDogs);
+      } else {
+        const allDogs = getAllDogs();
+        setDogs(allDogs);
+      }
+      
+      setShowCodeInput(false);
+      setAssessmentCode('');
+      
+      // Remove the assessment from localStorage
+      localStorage.removeItem(`assessment_${assessmentCode}`);
+      
+      alert(`Dog profile created successfully for ${dogName}!`);
+    } catch (error) {
+      alert('Error processing assessment code. Please try again.');
+      console.error('Error processing assessment:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,9 +182,8 @@ export default function DogsPage() {
     setSubmitting(true);
 
     try {
-      // Create new dog object
-      const newDog: Dog = {
-        id: Date.now().toString(), // Simple ID generation for demo
+      // Create new dog in database
+      const newDog = createDog({
         name: formData.name,
         breed: formData.breed,
         age: parseInt(formData.age) || 0,
@@ -200,12 +199,16 @@ export default function DogsPage() {
           relationship: formData.emergency_contact_relationship || 'Owner'
         } : undefined,
         photo_url: '/api/placeholder/150/150',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+      });
 
-      // Add to dogs list
-      setDogs(prev => [...prev, newDog]);
+      // Reload dogs from database to get the updated list
+      if (user?.role === 'parent') {
+        const userDogs = getDogsByOwner(user.id);
+        setDogs(userDogs);
+      } else {
+        const allDogs = getAllDogs();
+        setDogs(allDogs);
+      }
       
       // Reset form and close modal
       setFormData({
@@ -229,10 +232,10 @@ export default function DogsPage() {
     }
   };
 
-  const filteredDogs = dogs.filter(dog =>
-    dog.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dog.breed.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Use database search function for better performance
+  const filteredDogs = searchTerm.trim() 
+    ? searchDogs(searchTerm, user?.role === 'parent' ? user.id : undefined)
+    : dogs;
 
   if (loading) {
     return (
@@ -266,6 +269,14 @@ export default function DogsPage() {
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               Add New Dog
+            </Button>
+            <Button 
+              onClick={() => setShowCodeInput(true)}
+              variant="outline"
+              className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
+            >
+              <KeyIcon className="h-4 w-4 mr-2" />
+              Enter Code
             </Button>
           </div>
         )}
@@ -545,6 +556,58 @@ export default function DogsPage() {
         onClose={() => setShowAssessmentBot(false)}
         onComplete={handleAssessmentComplete}
       />
+
+      {/* Code Input Modal */}
+      {showCodeInput && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Enter Assessment Code</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCodeInput(false)}
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </Button>
+              </div>
+              <CardDescription>
+                Enter the 6-digit code you received after completing the dog assessment
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Assessment Code
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Enter 6-digit code"
+                  value={assessmentCode}
+                  onChange={(e) => setAssessmentCode(e.target.value)}
+                  maxLength={6}
+                  className="text-center text-lg font-mono tracking-widest"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCodeInput(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCodeSubmit}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Create Profile
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
