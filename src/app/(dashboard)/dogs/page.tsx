@@ -78,7 +78,7 @@ export default function DogsPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAssessmentComplete = (result: { dogProfile: any; recommendations: any }) => {
+  const handleAssessmentComplete = (result: { dogProfile: { name: string; age: number; breed: string; size: string; energyLevel: string; behaviorIssues: string[]; healthIssues: string[]; environment: string; experience: string }; recommendations: { primaryProgram: string; secondaryPrograms: string[]; reasoning: string; urgency: 'low' | 'medium' | 'high' } }) => {
     // Ask for dog name
     const dogName = prompt('What is your dog\'s name?');
     if (!dogName) return; // User cancelled

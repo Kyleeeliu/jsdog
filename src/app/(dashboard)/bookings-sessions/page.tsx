@@ -337,7 +337,7 @@ export default function BookingsSessionsPage() {
     console.log('Date clicked:', dateString);
   };
 
-  const handleEventClick = (event: { id: string; title: string; date: Date; type: string; status: string; time: string; color: string }) => {
+  const handleEventClick = (event: { id: string; title: string; date: Date; type: 'booking' | 'session'; status: string; time: string; color: string }) => {
     // Handle event click - could open a modal or navigate to details
     console.log('Event clicked:', event);
   };

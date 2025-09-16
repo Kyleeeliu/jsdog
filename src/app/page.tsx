@@ -9,7 +9,7 @@ import DogAssessmentBot from '@/components/DogAssessmentBot';
 export default function Home() {
   const [showAssessmentBot, setShowAssessmentBot] = useState(false);
 
-  const handleAssessmentComplete = (result: { code?: string; dogProfile?: any; recommendations?: any }) => {
+  const handleAssessmentComplete = (result: { code?: string; dogProfile?: { name: string; age: number; breed: string; size: string; energyLevel: string; behaviorIssues: string[]; healthIssues: string[]; environment: string; experience: string }; recommendations?: { primaryProgram: string; secondaryPrograms: string[]; reasoning: string; urgency: 'low' | 'medium' | 'high' } }) => {
     setShowAssessmentBot(false);
     
     // Show success message with code
