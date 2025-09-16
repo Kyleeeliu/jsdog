@@ -155,7 +155,7 @@ export function Calendar({ events, onDateClick, onEventClick }: CalendarProps) {
                   
                   {/* Events */}
                   <div className="space-y-1">
-                    {dayEvents.slice(0, 3).map((event, eventIndex) => (
+                    {dayEvents.slice(0, 3).map((event) => (
                       <div
                         key={event.id}
                         className={cn(

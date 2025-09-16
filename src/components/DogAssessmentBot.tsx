@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -167,7 +167,7 @@ const questions: Question[] = [
   }
 ];
 
-const getRecommendations = (answers: Record<string, any>): AssessmentResult => {
+const getRecommendations = (answers: Record<string, string | string[]>): AssessmentResult => {
   const behaviorIssues = answers.behaviorIssues || [];
   const healthIssues = answers.healthIssues || [];
   const energyLevel = answers.energyLevel;
@@ -176,7 +176,7 @@ const getRecommendations = (answers: Record<string, any>): AssessmentResult => {
   const goals = answers.goals || [];
 
   let primaryProgram = '';
-  let secondaryPrograms: string[] = [];
+  const secondaryPrograms: string[] = [];
   let reasoning = '';
   let urgency: 'low' | 'medium' | 'high' = 'low';
 
@@ -251,14 +251,14 @@ interface DogAssessmentBotProps {
 
 export default function DogAssessmentBot({ isOpen, onClose, onComplete }: DogAssessmentBotProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [isComplete, setIsComplete] = useState(false);
   const [result, setResult] = useState<AssessmentResult | null>(null);
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-  const handleAnswer = (value: any) => {
+  const handleAnswer = (value: string | string[]) => {
     setAnswers(prev => ({
       ...prev,
       [currentQuestion.id]: value
@@ -356,7 +356,7 @@ export default function DogAssessmentBot({ isOpen, onClose, onComplete }: DogAss
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Dog Assessment Bot</h2>
-              <p className="text-sm text-gray-600">Let's create a profile for your dog</p>
+              <p className="text-sm text-gray-600">Let&apos;s create a profile for your dog</p>
             </div>
           </div>
           <Button

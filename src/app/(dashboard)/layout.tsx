@@ -9,7 +9,6 @@ import {
   HomeIcon, 
   UserGroupIcon, 
   CalendarIcon, 
-  DocumentTextIcon, 
   ChatBubbleLeftRightIcon,
   UserIcon,
   Bars3Icon,

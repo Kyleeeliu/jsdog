@@ -12,10 +12,7 @@ import {
   ExclamationTriangleIcon,
   XCircleIcon,
   PlayIcon,
-  PauseIcon,
   MagnifyingGlassIcon,
-  PlusIcon,
-  UserGroupIcon,
   DocumentTextIcon,
   ViewColumnsIcon
 } from '@heroicons/react/24/outline';
@@ -182,7 +179,6 @@ const formatDateTime = (dateString: string) => {
 };
 
 export default function BookingsSessionsPage() {
-  const [user, setUser] = useState<User | null>(null);
   const [bookings, setBookings] = useState<Booking[]>(mockBookings);
   const [sessions, setSessions] = useState<Session[]>(mockSessions);
   const [activeTab, setActiveTab] = useState<'bookings' | 'sessions'>('bookings');
@@ -195,7 +191,6 @@ export default function BookingsSessionsPage() {
     const loadUser = async () => {
       try {
         const currentUser = await getCurrentUser();
-        setUser(currentUser);
         
         // Filter bookings and sessions based on user role
         if (currentUser?.role === 'parent') {
@@ -342,7 +337,7 @@ export default function BookingsSessionsPage() {
     console.log('Date clicked:', dateString);
   };
 
-  const handleEventClick = (event: any) => {
+  const handleEventClick = (event: { id: string; title: string; date: Date; type: string; status: string; time: string; color: string }) => {
     // Handle event click - could open a modal or navigate to details
     console.log('Event clicked:', event);
   };

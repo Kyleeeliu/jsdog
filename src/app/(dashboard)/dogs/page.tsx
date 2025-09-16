@@ -78,13 +78,13 @@ export default function DogsPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAssessmentComplete = (result: any) => {
+  const handleAssessmentComplete = (result: { dogProfile: any; recommendations: any }) => {
     // Ask for dog name
     const dogName = prompt('What is your dog\'s name?');
     if (!dogName) return; // User cancelled
     
     // Create a new dog profile in database based on the assessment
-    const newDog = createDog({
+    createDog({
       name: dogName,
       breed: result.dogProfile.breed,
       age: result.dogProfile.age.includes('Puppy') ? 0.5 : 
@@ -136,7 +136,7 @@ export default function DogsPage() {
       if (!dogName) return; // User cancelled
       
       // Create a new dog profile in database based on the assessment
-      const newDog = createDog({
+      createDog({
         name: dogName,
         breed: assessment.dogProfile.breed,
         age: assessment.dogProfile.age.includes('Puppy') ? 0.5 : 
@@ -183,7 +183,7 @@ export default function DogsPage() {
 
     try {
       // Create new dog in database
-      const newDog = createDog({
+      createDog({
         name: formData.name,
         breed: formData.breed,
         age: parseInt(formData.age) || 0,

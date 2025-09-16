@@ -111,7 +111,7 @@ export default function RegisterPage() {
           ) : (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                We've sent a confirmation email to your address. Please click the link in the email to verify your account.
+                We&apos;ve sent a confirmation email to your address. Please click the link in the email to verify your account.
               </p>
               <Link
                 href="/login"
