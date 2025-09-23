@@ -78,21 +78,24 @@ export default function DogsPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAssessmentComplete = (result: { dogProfile: { name: string; age: number; breed: string; size: string; energyLevel: string; behaviorIssues: string[]; healthIssues: string[]; environment: string; experience: string }; recommendations: { primaryProgram: string; secondaryPrograms: string[]; reasoning: string; urgency: 'low' | 'medium' | 'high' } }) => {
+  const handleAssessmentComplete = (result: { dogProfile: { name: string; age: string | number; breed: string; size: string; energyLevel: string; behaviorIssues: string[]; healthIssues: string[]; environment: string; experience: string }; recommendations: { primaryProgram: string; secondaryPrograms: string[]; reasoning: string; urgency: 'low' | 'medium' | 'high' } }) => {
     // Ask for dog name
     const dogName = prompt('What is your dog\'s name?');
     if (!dogName) return; // User cancelled
     
     // Create a new dog profile in database based on the assessment
+    const ageString = typeof result.dogProfile.age === 'string' ? result.dogProfile.age : result.dogProfile.age.toString();
+    const sizeString = result.dogProfile.size;
+    
     createDog({
       name: dogName,
       breed: result.dogProfile.breed,
-      age: result.dogProfile.age.includes('Puppy') ? 0.5 : 
-           result.dogProfile.age.includes('Young') ? 2 : 
-           result.dogProfile.age.includes('Adult') ? 5 : 8,
-      weight: result.dogProfile.size.includes('Small') ? 15 : 
-              result.dogProfile.size.includes('Medium') ? 40 : 
-              result.dogProfile.size.includes('Large') ? 80 : 120,
+      age: ageString.includes('Puppy') ? 0.5 : 
+           ageString.includes('Young') ? 2 : 
+           ageString.includes('Adult') ? 5 : 8,
+      weight: sizeString.includes('Small') ? 15 : 
+              sizeString.includes('Medium') ? 40 : 
+              sizeString.includes('Large') ? 80 : 120,
       owner_id: user?.id || '1',
       medical_notes: result.dogProfile.healthIssues.length > 0 ? 
         `Health issues: ${result.dogProfile.healthIssues.join(', ')}` : undefined,
