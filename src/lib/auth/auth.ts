@@ -1,5 +1,6 @@
 import { supabase } from '../supabase/client';
 import { User, UserRole } from '@/types';
+import { syncUserWithAuth } from '../database/users';
 
 // Utility function to safely set localStorage with retry
 const safeSetLocalStorage = (key: string, value: string, maxRetries = 3) => {
@@ -77,9 +78,12 @@ export async function signIn(email: string, password: string) {
         const newUser = JSON.parse(newUserStr);
         console.log('Parsed new user:', newUser);
         
+        // Sync user with database
+        const syncedUser = syncUserWithAuth(newUser);
+        
         // For newly registered users, accept any password (since we don't store passwords in mock)
-        safeSetLocalStorage('mockUser', JSON.stringify(newUser));
-        console.log('Set mockUser in localStorage:', JSON.stringify(newUser));
+        safeSetLocalStorage('mockUser', JSON.stringify(syncedUser));
+        console.log('Set mockUser in localStorage:', JSON.stringify(syncedUser));
         
         localStorage.removeItem('newUser_' + email);
         console.log('Removed newUser_' + email + ' from localStorage');
@@ -88,7 +92,7 @@ export async function signIn(email: string, password: string) {
         const verifyMockUser = localStorage.getItem('mockUser');
         console.log('Verification - mockUser in localStorage:', verifyMockUser);
         
-        return { user: newUser, session: { user: newUser } };
+        return { user: syncedUser, session: { user: syncedUser } };
       } catch (error) {
         console.error('Error processing new user:', error);
         throw new Error('Invalid user data');
@@ -106,9 +110,11 @@ export async function signIn(email: string, password: string) {
       
       if (validPasswords.includes(password)) {
         console.log('Valid demo account password');
-        safeSetLocalStorage('mockUser', JSON.stringify(mockUser));
-        console.log('Set mockUser for demo account:', JSON.stringify(mockUser));
-        return { user: mockUser, session: { user: mockUser } };
+        // Sync user with database
+        const syncedUser = syncUserWithAuth(mockUser);
+        safeSetLocalStorage('mockUser', JSON.stringify(syncedUser));
+        console.log('Set mockUser for demo account:', JSON.stringify(syncedUser));
+        return { user: syncedUser, session: { user: syncedUser } };
       } else {
         console.log('Invalid password for demo account');
       }
@@ -147,17 +153,20 @@ export async function signUp(email: string, password: string, fullName: string, 
       updated_at: new Date().toISOString(),
     };
     
+    // Sync user with database
+    const syncedUser = syncUserWithAuth(newUser);
+    
     // Store the new user temporarily with their password
-    localStorage.setItem('newUser_' + email, JSON.stringify(newUser));
+    localStorage.setItem('newUser_' + email, JSON.stringify(syncedUser));
     localStorage.setItem('userPassword_' + email, password);
     
     // Also store in mockUsers array for future reference
-    mockUsers.push(newUser);
+    mockUsers.push(syncedUser);
     
-    console.log('Created new mock user:', newUser);
+    console.log('Created new mock user:', syncedUser);
     
     // Return the user immediately for mock authentication
-    return { user: newUser, session: { user: newUser } };
+    return { user: syncedUser, session: { user: syncedUser } };
   }
 
   // Real Supabase registration

@@ -15,62 +15,14 @@ import {
 import { getCurrentUser } from '@/lib/auth/auth';
 import { Message, User, UserRole } from '@/types';
 import { formatDateTime } from '@/lib/utils';
+import { getAllUsers } from '@/lib/database/users';
+import { createMessage, getMessagesByUser } from '@/lib/database/messages';
 
-// Mock data for demonstration
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    sender_id: '1',
-    recipient_id: '2',
-    subject: 'Max Training Progress Update',
-    content: 'Hi Sarah, I wanted to update you on Max\'s progress. He\'s doing really well with his recall training and has shown great improvement in the last few sessions. He\'s responding well to the positive reinforcement techniques we\'ve been using.',
-    is_announcement: false,
-    created_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
-    updated_at: new Date(Date.now() - 3600000).toISOString(),
-  },
-  {
-    id: '2',
-    sender_id: '2',
-    recipient_id: '1',
-    subject: 'Luna Behavioral Session Request',
-    content: 'Hi Mike, I\'ve noticed Luna has been showing some anxiety around other dogs during our walks. I think a behavioral session would be really helpful. When would be a good time to schedule this?',
-    is_announcement: false,
-    created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    updated_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: '3',
-    sender_id: '3',
-    recipient_id: '1',
-    subject: 'Buddy Daycare Schedule',
-    content: 'Hi Lisa, I wanted to confirm Buddy\'s daycare schedule for next week. He\'ll be coming in on Monday, Wednesday, and Friday. Please let me know if you need any special arrangements for his hip dysplasia.',
-    is_announcement: false,
-    created_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-    updated_at: new Date(Date.now() - 172800000).toISOString(),
-  },
-  {
-    id: '4',
-    sender_id: '1',
-    recipient_id: undefined,
-    subject: 'Holiday Schedule Update',
-    content: 'Hi everyone, just a reminder that we\'ll be closed for the holidays from December 24th to January 2nd. All sessions will resume on January 3rd. Happy holidays!',
-    is_announcement: true,
-    target_roles: ['parent', 'trainer'],
-    created_at: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-    updated_at: new Date(Date.now() - 259200000).toISOString(),
-  },
-];
-
-const mockUsers = [
-  { id: '1', name: 'Sarah Johnson', role: 'parent' },
-  { id: '2', name: 'Mike Smith', role: 'parent' },
-  { id: '3', name: 'Lisa Brown', role: 'parent' },
-  { id: '4', name: 'John Trainer', role: 'trainer' },
-  { id: '5', name: 'Admin User', role: 'admin' },
-];
+// Get real users from database
+const getUsers = () => getAllUsers();
 
 export default function MessagesPage() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [loading, setLoading] = useState(true);
@@ -90,24 +42,10 @@ export default function MessagesPage() {
         const user = await getCurrentUser();
         setCurrentUser(user);
         
-        // Filter messages based on user role
-        if (user?.role === 'parent') {
-          // Parents see messages they sent or received
-          setMessages(mockMessages.filter(msg => 
-            msg.sender_id === user.id || 
-            msg.recipient_id === user.id ||
-            msg.is_announcement
-          ));
-        } else if (user?.role === 'trainer') {
-          // Trainers see messages they sent or received
-          setMessages(mockMessages.filter(msg => 
-            msg.sender_id === user.id || 
-            msg.recipient_id === user.id ||
-            msg.is_announcement
-          ));
-        } else {
-          // Admins see all messages
-          setMessages(mockMessages);
+        if (user) {
+          // Load messages from database based on user role
+          const userMessages = getMessagesByUser(user.id);
+          setMessages(userMessages);
         }
       } catch (error) {
         console.error('Error loading user:', error);
@@ -128,14 +66,16 @@ export default function MessagesPage() {
   const recentMessages = messages.slice(0, 5);
 
   const getSenderName = (senderId: string) => {
-    const sender = mockUsers.find(u => u.id === senderId);
-    return sender?.name || 'Unknown User';
+    const allUsers = getUsers();
+    const sender = allUsers.find(u => u.id === senderId);
+    return sender?.full_name || 'Unknown User';
   };
 
   const getReceiverName = (receiverId?: string) => {
     if (!receiverId) return 'All Users';
-    const receiver = mockUsers.find(u => u.id === receiverId);
-    return receiver?.name || 'Unknown User';
+    const allUsers = getUsers();
+    const receiver = allUsers.find(u => u.id === receiverId);
+    return receiver?.full_name || 'Unknown User';
   };
 
   const getMessageTypeColor = (isAnnouncement: boolean) => {
@@ -157,18 +97,17 @@ export default function MessagesPage() {
     
     if (!currentUser) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
+    // Create message in database
+    const newMessage = createMessage({
       sender_id: currentUser.id,
       recipient_id: formData.is_announcement ? undefined : formData.recipient_id,
       subject: formData.subject,
       content: formData.content,
       is_announcement: formData.is_announcement,
       target_roles: formData.is_announcement ? formData.target_roles : undefined,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
+    });
 
+    // Update local state
     setMessages(prev => [newMessage, ...prev]);
     setFormData({
       recipient_id: '',
@@ -183,12 +122,15 @@ export default function MessagesPage() {
   const getAvailableRecipients = () => {
     if (!currentUser) return [];
     
+    const allUsers = getUsers();
+    
     // Filter out current user and show appropriate recipients based on role
-    return mockUsers.filter(user => 
+    return allUsers.filter(user => 
       user.id !== currentUser.id && 
       (currentUser.role === 'admin' || 
-       (currentUser.role === 'trainer' && user.role === 'parent') ||
-       (currentUser.role === 'parent' && user.role === 'trainer'))
+       (currentUser.role === 'trainer' && (user.role === 'parent' || user.role === 'behaviorist')) ||
+       (currentUser.role === 'parent' && (user.role === 'trainer' || user.role === 'behaviorist')) ||
+       (currentUser.role === 'behaviorist' && (user.role === 'parent' || user.role === 'trainer')))
     );
   };
 
@@ -394,7 +336,7 @@ export default function MessagesPage() {
                     <option value="">Select recipient...</option>
                     {getAvailableRecipients().map(user => (
                       <option key={user.id} value={user.id}>
-                        {user.name} ({user.role})
+                        {user.full_name} ({user.role})
                       </option>
                     ))}
                   </select>
