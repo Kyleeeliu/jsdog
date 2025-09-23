@@ -13,7 +13,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { getCurrentUser } from '@/lib/auth/auth';
-import { Message } from '@/types';
+import { Message, User } from '@/types';
 import { formatDateTime } from '@/lib/utils';
 
 // Mock data for demonstration
