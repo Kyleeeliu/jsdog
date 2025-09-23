@@ -219,13 +219,13 @@ export default function BookingsSessionsPage() {
   const filteredBookings = bookings.filter(booking => 
     (filter === 'all' || booking.status === filter) &&
     (booking.booking_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     booking.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     booking.special_instructions.toLowerCase().includes(searchTerm.toLowerCase()))
+     (booking.location && booking.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
+     (booking.special_instructions && booking.special_instructions.toLowerCase().includes(searchTerm.toLowerCase())))
   );
 
   const filteredSessions = sessions.filter(session => 
     (filter === 'all' || session.status === filter) &&
-    (session.notes.toLowerCase().includes(searchTerm.toLowerCase()))
+    (session.notes && session.notes.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const getAvailableFilters = () => {
