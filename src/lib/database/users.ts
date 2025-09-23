@@ -127,6 +127,8 @@ export const createUser = (userData: Omit<User, 'id' | 'created_at' | 'updated_a
 };
 
 export const getAllUsers = (): User[] => {
+  console.log('getAllUsers called, db.users:', db.users);
+  console.log('Database state:', db);
   return db.users;
 };
 
@@ -182,8 +184,18 @@ export const getUsersByRole = (role: string): User[] => {
 
 // For development/testing: reset the database
 export const resetDB = () => {
-  localStorage.removeItem(DB_KEY);
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(DB_KEY);
+  }
   db = initializeDB();
+};
+
+// Ensure database is properly initialized
+export const ensureDBInitialized = () => {
+  if (typeof window !== 'undefined' && db.users.length === 0) {
+    console.log('Database appears empty, reinitializing...');
+    db = initializeDB();
+  }
 };
 
 // Sync with auth system - add user if they don't exist

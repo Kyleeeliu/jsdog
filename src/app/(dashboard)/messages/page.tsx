@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,10 @@ import {
 import { getCurrentUser } from '@/lib/auth/auth';
 import { Message, User, UserRole } from '@/types';
 import { formatDateTime } from '@/lib/utils';
-import { getAllUsers } from '@/lib/database/users';
-import { createMessage, getMessagesByUser } from '@/lib/database/messages';
+import { getAllUsers } from '@/lib/supabase/users';
+import { createMessage, getMessagesByUser, subscribeToMessages } from '@/lib/supabase/messages';
 
-// Get real users from database
-const getUsers = () => getAllUsers();
+// Import getAllUsers directly from the database
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -35,6 +34,7 @@ export default function MessagesPage() {
     target_roles: [] as UserRole[]
   });
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [availableRecipients, setAvailableRecipients] = useState<User[]>([]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -43,9 +43,23 @@ export default function MessagesPage() {
         setCurrentUser(user);
         
         if (user) {
-          // Load messages from database based on user role
-          const userMessages = getMessagesByUser(user.id);
+          // Load messages from Supabase based on user role
+          const userMessages = await getMessagesByUser(user.id);
           setMessages(userMessages);
+          
+          // Load available recipients
+          const recipients = await getAvailableRecipients();
+          setAvailableRecipients(recipients);
+          
+          // Subscribe to real-time message updates
+          const subscription = subscribeToMessages(user.id, (newMessage) => {
+            setMessages(prev => [newMessage, ...prev]);
+          });
+          
+          // Cleanup subscription on unmount
+          return () => {
+            subscription.unsubscribe();
+          };
         }
       } catch (error) {
         console.error('Error loading user:', error);
@@ -65,17 +79,27 @@ export default function MessagesPage() {
   const unreadMessages = messages.filter(message => !message.read_at);
   const recentMessages = messages.slice(0, 5);
 
-  const getSenderName = (senderId: string) => {
-    const allUsers = getUsers();
-    const sender = allUsers.find(u => u.id === senderId);
-    return sender?.full_name || 'Unknown User';
+  const getSenderName = async (senderId: string) => {
+    try {
+      const allUsers = await getAllUsers();
+      const sender = allUsers.find(u => u.id === senderId);
+      return sender?.full_name || 'Unknown User';
+    } catch (error) {
+      console.error('Error getting sender name:', error);
+      return 'Unknown User';
+    }
   };
 
-  const getReceiverName = (receiverId?: string) => {
+  const getReceiverName = async (receiverId?: string) => {
     if (!receiverId) return 'All Users';
-    const allUsers = getUsers();
-    const receiver = allUsers.find(u => u.id === receiverId);
-    return receiver?.full_name || 'Unknown User';
+    try {
+      const allUsers = await getAllUsers();
+      const receiver = allUsers.find(u => u.id === receiverId);
+      return receiver?.full_name || 'Unknown User';
+    } catch (error) {
+      console.error('Error getting receiver name:', error);
+      return 'Unknown User';
+    }
   };
 
   const getMessageTypeColor = (isAnnouncement: boolean) => {
@@ -92,46 +116,87 @@ export default function MessagesPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!currentUser) return;
 
-    // Create message in database
-    const newMessage = createMessage({
-      sender_id: currentUser.id,
-      recipient_id: formData.is_announcement ? undefined : formData.recipient_id,
-      subject: formData.subject,
-      content: formData.content,
-      is_announcement: formData.is_announcement,
-      target_roles: formData.is_announcement ? formData.target_roles : undefined,
-    });
+    try {
+      // Create message in Supabase
+      const newMessage = await createMessage({
+        sender_id: currentUser.id,
+        recipient_id: formData.is_announcement ? undefined : formData.recipient_id,
+        subject: formData.subject,
+        content: formData.content,
+        is_announcement: formData.is_announcement,
+        target_roles: formData.is_announcement ? formData.target_roles : undefined,
+      });
 
-    // Update local state
-    setMessages(prev => [newMessage, ...prev]);
-    setFormData({
-      recipient_id: '',
-      subject: '',
-      content: '',
-      is_announcement: false,
-      target_roles: [] as UserRole[]
-    });
-    setShowNewMessageModal(false);
+      // Update local state
+      setMessages(prev => [newMessage, ...prev]);
+      setFormData({
+        recipient_id: '',
+        subject: '',
+        content: '',
+        is_announcement: false,
+        target_roles: [] as UserRole[]
+      });
+      setShowNewMessageModal(false);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message. Please try again.');
+    }
   };
 
-  const getAvailableRecipients = () => {
+  const getAvailableRecipients = useCallback(async () => {
     if (!currentUser) return [];
     
-    const allUsers = getUsers();
-    
-    // Filter out current user and show appropriate recipients based on role
-    return allUsers.filter(user => 
-      user.id !== currentUser.id && 
-      (currentUser.role === 'admin' || 
-       (currentUser.role === 'trainer' && (user.role === 'parent' || user.role === 'behaviorist')) ||
-       (currentUser.role === 'parent' && (user.role === 'trainer' || user.role === 'behaviorist')) ||
-       (currentUser.role === 'behaviorist' && (user.role === 'parent' || user.role === 'trainer')))
-    );
+    try {
+      const allUsers = await getAllUsers();
+      console.log('All users from Supabase:', allUsers);
+      console.log('Current user:', currentUser);
+      
+      // Filter out current user and show appropriate recipients based on role
+      let recipients = allUsers.filter(user => 
+        user.id !== currentUser.id && 
+        (currentUser.role === 'admin' || 
+         (currentUser.role === 'trainer' && (user.role === 'parent' || user.role === 'behaviorist')) ||
+         (currentUser.role === 'parent' && (user.role === 'trainer' || user.role === 'behaviorist')) ||
+         (currentUser.role === 'behaviorist' && (user.role === 'parent' || user.role === 'trainer')))
+      );
+      
+      // If no recipients found with role-based filtering, show all other users (except current user)
+      if (recipients.length === 0) {
+        recipients = allUsers.filter(user => user.id !== currentUser.id);
+        console.log('No role-based recipients found, showing all other users:', recipients);
+      }
+      
+      console.log('Available recipients:', recipients);
+      return recipients;
+    } catch (error) {
+      console.error('Error fetching recipients:', error);
+      return [];
+    }
+  }, [currentUser]);
+
+  // Debug: Show current users in database
+  const debugUsers = async () => {
+    try {
+      const allUsers = await getAllUsers();
+      console.log('=== DEBUG: All Users in Supabase ===');
+      console.log('Total users:', allUsers.length);
+      allUsers.forEach((user, index) => {
+        console.log(`User ${index + 1}:`, {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role
+        });
+      });
+      console.log('=== END DEBUG ===');
+    } catch (error) {
+      console.error('Error debugging users:', error);
+    }
   };
 
   if (loading) {
@@ -149,13 +214,20 @@ export default function MessagesPage() {
           <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
           <p className="text-gray-600">Communicate with trainers, parents, and staff</p>
         </div>
-        <Button 
-          onClick={() => setShowNewMessageModal(true)}
-          className="mt-4 sm:mt-0"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          New Message
-        </Button>
+        <div className="flex gap-2 mt-4 sm:mt-0">
+          <Button 
+            onClick={() => setShowNewMessageModal(true)}
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            New Message
+          </Button>
+          <Button 
+            onClick={debugUsers}
+            variant="outline"
+          >
+            Debug Users
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -334,7 +406,7 @@ export default function MessagesPage() {
                     required
                   >
                     <option value="">Select recipient...</option>
-                    {getAvailableRecipients().map(user => (
+                    {availableRecipients.map(user => (
                       <option key={user.id} value={user.id}>
                         {user.full_name} ({user.role})
                       </option>

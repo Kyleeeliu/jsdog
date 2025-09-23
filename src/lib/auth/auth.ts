@@ -1,6 +1,7 @@
 import { supabase } from '../supabase/client';
 import { User, UserRole } from '@/types';
-import { syncUserWithAuth } from '../database/users';
+import { getCurrentSupabaseUser } from '../supabase/users';
+import { syncUserWithAuth as syncUserWithLocalStorage } from '../database/users';
 
 // Utility function to safely set localStorage with retry
 const safeSetLocalStorage = (key: string, value: string, maxRetries = 3) => {
@@ -79,7 +80,7 @@ export async function signIn(email: string, password: string) {
         console.log('Parsed new user:', newUser);
         
         // Sync user with database
-        const syncedUser = syncUserWithAuth(newUser);
+        const syncedUser = syncUserWithLocalStorage(newUser);
         
         // For newly registered users, accept any password (since we don't store passwords in mock)
         safeSetLocalStorage('mockUser', JSON.stringify(syncedUser));
@@ -111,7 +112,7 @@ export async function signIn(email: string, password: string) {
       if (validPasswords.includes(password)) {
         console.log('Valid demo account password');
         // Sync user with database
-        const syncedUser = syncUserWithAuth(mockUser);
+        const syncedUser = syncUserWithLocalStorage(mockUser);
         safeSetLocalStorage('mockUser', JSON.stringify(syncedUser));
         console.log('Set mockUser for demo account:', JSON.stringify(syncedUser));
         return { user: syncedUser, session: { user: syncedUser } };
@@ -154,7 +155,7 @@ export async function signUp(email: string, password: string, fullName: string, 
     };
     
     // Sync user with database
-    const syncedUser = syncUserWithAuth(newUser);
+    const syncedUser = syncUserWithLocalStorage(newUser);
     
     // Store the new user temporarily with their password
     localStorage.setItem('newUser_' + email, JSON.stringify(syncedUser));
@@ -268,52 +269,14 @@ export async function getCurrentUser(): Promise<User | null> {
   console.log('Using Supabase authentication');
   
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (userError) {
-      console.error('Error getting Supabase user:', userError);
-      return null;
+    const user = await getCurrentSupabaseUser();
+    if (user) {
+      console.log('Found Supabase user:', user.email);
+      return user;
     }
     
-    if (!user) {
-      console.log('No Supabase user found');
-      return null;
-    }
-    
-    console.log('Supabase user found:', user.email);
-    
-    // Try to get user profile from our users table
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    
-    if (profileError) {
-      console.log('Profile not found in users table, creating basic user object:', profileError.message);
-      
-      // If profile doesn't exist, create a basic user object from auth data
-      const basicUser: User = {
-        id: user.id,
-        email: user.email || '',
-        full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-        role: user.user_metadata?.role || 'parent',
-        phone: user.user_metadata?.phone || '',
-        created_at: user.created_at,
-        updated_at: user.updated_at || user.created_at,
-      };
-      
-      console.log('Created basic user object:', basicUser);
-      return basicUser;
-    }
-    
-    if (!profile) {
-      console.log('Profile is null');
-      return null;
-    }
-    
-    console.log('User profile found:', profile);
-    return profile;
+    console.log('No Supabase user found');
+    return null;
     
   } catch (error) {
     console.error('Error in getCurrentUser:', error);
