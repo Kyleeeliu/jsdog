@@ -44,6 +44,9 @@ export default function Home() {
               <Link href="#team" className="text-gray-600 hover:text-[rgb(0_32_96)] font-medium transition-colors">
                 Our Team
               </Link>
+              <Link href="#gallery" className="text-gray-600 hover:text-[rgb(0_32_96)] font-medium transition-colors">
+                Our Dogs
+              </Link>
               <Link href="#services" className="text-gray-600 hover:text-[rgb(0_32_96)] font-medium transition-colors">
                 Services
               </Link>
@@ -65,12 +68,35 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="relative py-16 sm:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Animated background dog images */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-32 h-32 rounded-full overflow-hidden animate-bounce" style={{animationDuration: '3s'}}>
+            <img src="/1000524395.jpg" alt="Happy dog" className="w-full h-full object-cover" />
+          </div>
+          <div className="absolute top-20 right-20 w-24 h-24 rounded-full overflow-hidden animate-pulse" style={{animationDuration: '2s'}}>
+            <img src="/1000524743.jpg" alt="Playful dog" className="w-full h-full object-cover" />
+          </div>
+          <div className="absolute bottom-20 left-20 w-28 h-28 rounded-full overflow-hidden animate-bounce" style={{animationDuration: '4s', animationDelay: '1s'}}>
+            <img src="/1000525223.jpg" alt="Training dog" className="w-full h-full object-cover" />
+          </div>
+          <div className="absolute bottom-10 right-10 w-20 h-20 rounded-full overflow-hidden animate-pulse" style={{animationDuration: '2.5s', animationDelay: '0.5s'}}>
+            <img src="/1000531276.jpg" alt="Cute dog" className="w-full h-full object-cover" />
+          </div>
+        </div>
+        
+        {/* Floating elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-[rgb(0_32_96)] bg-opacity-20 rounded-full animate-ping" style={{animationDuration: '3s'}}></div>
+          <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-[rgb(0_32_96)] bg-opacity-30 rounded-full animate-ping" style={{animationDuration: '2s', animationDelay: '1s'}}></div>
+          <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-[rgb(0_32_96)] bg-opacity-25 rounded-full animate-ping" style={{animationDuration: '4s', animationDelay: '2s'}}></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto text-center relative z-10">
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight text-center">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight text-center animate-pulse" style={{animationDuration: '3s'}}>
             Professional Dog Services for{' '}
-            <span className="text-[rgb(0_32_96)] bg-gradient-to-r from-[rgb(0_32_96)] to-[rgb(0_24_96)] bg-clip-text text-transparent">
+            <span className="text-[rgb(0_32_96)] bg-gradient-to-r from-[rgb(0_32_96)] to-[rgb(0_24_96)] bg-clip-text text-transparent animate-bounce" style={{animationDuration: '2s'}}>
               Every Need
             </span>
           </h1>
@@ -84,7 +110,8 @@ export default function Home() {
             <Button 
               onClick={() => setShowAssessmentBot(true)}
               size="lg" 
-              className="text-lg px-8 py-4 bg-[rgb(0_32_96)] hover:bg-[rgb(0_24_72)] transition-colors shadow-lg hover:shadow-xl"
+              className="text-lg px-8 py-4 bg-[rgb(0_32_96)] hover:bg-[rgb(0_24_72)] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 animate-pulse"
+              style={{animationDuration: '2s'}}
             >
               🐕 Get Personalized Recommendations
             </Button>
@@ -92,7 +119,7 @@ export default function Home() {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="text-lg px-8 py-4 border-2 border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white transition-colors"
+                className="text-lg px-8 py-4 border-2 border-[rgb(0_32_96)] text-[rgb(0_32_96)] hover:bg-[rgb(0_32_96)] hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
                 Sign Up
               </Button>
@@ -100,19 +127,22 @@ export default function Home() {
           </div>
 
           
-          {/* Trust Indicators */}
+          {/* Animated Trust Indicators */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[rgb(0_32_96)] mb-2">500+</div>
-              <div className="text-sm text-gray-600">Happy Dogs</div>
+            <div className="text-center group">
+              <div className="text-2xl font-bold text-[rgb(0_32_96)] mb-2 group-hover:scale-110 transition-transform duration-300">500+</div>
+              <div className="text-sm text-gray-600 group-hover:text-[rgb(0_32_96)] transition-colors">Happy Dogs</div>
+              <div className="w-8 h-1 bg-[rgb(0_32_96)] mx-auto mt-2 rounded-full animate-pulse"></div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[rgb(0_32_96)] mb-2">50+</div>
-              <div className="text-sm text-gray-600">Professional Trainers</div>
+            <div className="text-center group">
+              <div className="text-2xl font-bold text-[rgb(0_32_96)] mb-2 group-hover:scale-110 transition-transform duration-300">50+</div>
+              <div className="text-sm text-gray-600 group-hover:text-[rgb(0_32_96)] transition-colors">Professional Trainers</div>
+              <div className="w-8 h-1 bg-[rgb(0_32_96)] mx-auto mt-2 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[rgb(0_32_96)] mb-2">98%</div>
-              <div className="text-sm text-gray-600">Satisfaction Rate</div>
+            <div className="text-center group">
+              <div className="text-2xl font-bold text-[rgb(0_32_96)] mb-2 group-hover:scale-110 transition-transform duration-300">98%</div>
+              <div className="text-sm text-gray-600 group-hover:text-[rgb(0_32_96)] transition-colors">Satisfaction Rate</div>
+              <div className="w-8 h-1 bg-[rgb(0_32_96)] mx-auto mt-2 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
             </div>
           </div>
         </div>
@@ -132,9 +162,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {/* Lucy - Founder */}
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border-0 shadow-lg">
               <CardContent className="p-6">
-                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
                   <span className="text-white text-2xl font-bold">L</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Lucy</h3>
@@ -147,9 +177,9 @@ export default function Home() {
             </Card>
 
             {/* Andy */}
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border-0 shadow-lg">
               <CardContent className="p-6">
-                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
                   <span className="text-white text-2xl font-bold">A</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Andy</h3>
@@ -162,9 +192,9 @@ export default function Home() {
             </Card>
 
             {/* Robyn */}
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border-0 shadow-lg">
               <CardContent className="p-6">
-                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
                   <span className="text-white text-2xl font-bold">R</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Robyn</h3>
@@ -177,9 +207,9 @@ export default function Home() {
             </Card>
 
             {/* Nicole */}
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border-0 shadow-lg">
               <CardContent className="p-6">
-                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
                   <span className="text-white text-2xl font-bold">N</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Nicole</h3>
@@ -192,9 +222,9 @@ export default function Home() {
             </Card>
 
             {/* Chelsey */}
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border-0 shadow-lg">
               <CardContent className="p-6">
-                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
                   <span className="text-white text-2xl font-bold">C</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Chelsey</h3>
@@ -207,9 +237,9 @@ export default function Home() {
             </Card>
 
             {/* Olivia */}
-            <Card className="text-center hover:shadow-lg transition-shadow">
+            <Card className="text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group border-0 shadow-lg">
               <CardContent className="p-6">
-                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 h-20 bg-[rgb(0_32_96)] rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
                   <span className="text-white text-2xl font-bold">O</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Olivia</h3>
@@ -233,6 +263,69 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Our Happy Dogs Gallery */}
+      <section id="gallery" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Our Happy Dogs
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Meet some of the amazing dogs we&apos;ve had the pleasure of working with
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000524395.jpg" alt="Happy dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000524743.jpg" alt="Playful dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000525223.jpg" alt="Training dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000531276.jpg" alt="Cute dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000531400.jpg" alt="Adorable dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000532605.jpg" alt="Friendly dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000532661.jpg" alt="Loving dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000538234.jpg" alt="Beautiful dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000539282.jpg" alt="Sweet dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <div className="aspect-square rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+              <img src="/1000543258.jpg" alt="Amazing dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-600 text-lg">
+              Every dog has a unique personality and story. We&apos;re proud to be part of their journey.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
       <section id="services" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
@@ -247,10 +340,10 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 group bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="pb-4">
-                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl text-white">🎯</span>
+                <div className="w-14 h-14 rounded-xl overflow-hidden mb-4 group-hover:scale-125 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <img src="/1000525223.jpg" alt="Training dog" className="w-full h-full object-cover" />
                 </div>
                 <CardTitle className="text-xl text-[rgb(0_32_96)]">Private Training</CardTitle>
                 <CardDescription className="text-base leading-relaxed text-gray-700">
@@ -271,9 +364,9 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 group bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="pb-4">
-                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-125 group-hover:rotate-6 transition-all duration-500 shadow-lg">
                   <span className="text-2xl text-white">📚</span>
                 </div>
                 <CardTitle className="text-xl text-[rgb(0_32_96)]">Tutoring (Private training add on)</CardTitle>
@@ -295,10 +388,10 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 group bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="pb-4">
-                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl text-white">🎪</span>
+                <div className="w-14 h-14 rounded-xl overflow-hidden mb-4 group-hover:scale-125 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <img src="/1000531400.jpg" alt="Playful dog" className="w-full h-full object-cover" />
                 </div>
                 <CardTitle className="text-xl text-[rgb(0_32_96)]">Private Activity & Enrichment Service</CardTitle>
                 <CardDescription className="text-base leading-relaxed text-gray-700">
@@ -319,10 +412,10 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+            <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 group bg-gradient-to-br from-white to-gray-50">
               <CardHeader className="pb-4">
-                <div className="w-14 h-14 bg-[rgb(0_32_96)] rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl text-white">🏃</span>
+                <div className="w-14 h-14 rounded-xl overflow-hidden mb-4 group-hover:scale-125 group-hover:rotate-6 transition-all duration-500 shadow-lg">
+                  <img src="/1000532605.jpg" alt="Walking dog" className="w-full h-full object-cover" />
                 </div>
                 <CardTitle className="text-xl text-[rgb(0_32_96)]">The Dog Jog Walking and Socialisation Service</CardTitle>
                 <CardDescription className="text-base leading-relaxed text-gray-700">

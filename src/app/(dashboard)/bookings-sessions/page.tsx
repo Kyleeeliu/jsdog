@@ -259,7 +259,7 @@ export default function BookingsSessionsPage() {
 
   // Convert bookings and sessions to calendar events
   const getCalendarEvents = () => {
-    const events: any[] = [];
+    const events: { id: string; title: string; date: Date; type: 'booking' | 'session'; status: string; time: string; color: string }[] = [];
     
     // Add booking events
     bookings.forEach(booking => {
