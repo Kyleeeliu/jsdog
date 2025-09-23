@@ -13,7 +13,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { getCurrentUser } from '@/lib/auth/auth';
-import { Message, User } from '@/types';
+import { Message, User, UserRole } from '@/types';
 import { formatDateTime } from '@/lib/utils';
 
 // Mock data for demonstration
@@ -80,7 +80,7 @@ export default function MessagesPage() {
     subject: '',
     content: '',
     is_announcement: false,
-    target_roles: [] as string[]
+    target_roles: [] as UserRole[]
   });
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
@@ -175,7 +175,7 @@ export default function MessagesPage() {
       subject: '',
       content: '',
       is_announcement: false,
-      target_roles: []
+      target_roles: [] as UserRole[]
     });
     setShowNewMessageModal(false);
   };
