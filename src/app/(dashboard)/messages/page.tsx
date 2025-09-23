@@ -145,7 +145,7 @@ export default function MessagesPage() {
     return 'bg-[rgb(0_32_96)] text-white';
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | UserRole[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -408,7 +408,7 @@ export default function MessagesPage() {
                     Target Roles
                   </label>
                   <div className="space-y-2">
-                    {['parent', 'trainer'].map(role => (
+                    {(['parent', 'trainer'] as UserRole[]).map(role => (
                       <label key={role} className="flex items-center">
                         <input
                           type="checkbox"

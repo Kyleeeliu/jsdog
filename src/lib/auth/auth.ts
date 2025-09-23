@@ -376,6 +376,7 @@ export function hasPermission(userRole: UserRole, requiredRole: UserRole): boole
   const roleHierarchy: Record<UserRole, number> = {
     parent: 1,
     trainer: 2,
+    behaviorist: 2,
     admin: 3,
   };
 

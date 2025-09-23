@@ -27,7 +27,7 @@ interface Question {
 interface AssessmentResult {
   dogProfile: {
     name: string;
-    age: number;
+    age: string;
     breed: string;
     size: string;
     energyLevel: string;
@@ -42,6 +42,7 @@ interface AssessmentResult {
     reasoning: string;
     urgency: 'low' | 'medium' | 'high';
   };
+  code?: string;
 }
 
 const questions: Question[] = [
@@ -168,12 +169,12 @@ const questions: Question[] = [
 ];
 
 const getRecommendations = (answers: Record<string, string | string[]>): AssessmentResult => {
-  const behaviorIssues = answers.behaviorIssues || [];
-  const healthIssues = answers.healthIssues || [];
+  const behaviorIssues = Array.isArray(answers.behaviorIssues) ? answers.behaviorIssues : [];
+  const healthIssues = Array.isArray(answers.healthIssues) ? answers.healthIssues : [];
   const energyLevel = answers.energyLevel;
   const trainingExperience = answers.trainingExperience;
   const socialization = answers.socialization;
-  const goals = answers.goals || [];
+  const goals = Array.isArray(answers.goals) ? answers.goals : [];
 
   let primaryProgram = '';
   const secondaryPrograms: string[] = [];
@@ -225,14 +226,14 @@ const getRecommendations = (answers: Record<string, string | string[]>): Assessm
   return {
     dogProfile: {
       name: '', // Will be filled in after login
-      age: answers.age || '',
-      breed: answers.breed || '',
-      size: answers.size || '',
-      energyLevel: answers.energyLevel || '',
+      age: Array.isArray(answers.age) ? answers.age[0] || '' : answers.age || '',
+      breed: Array.isArray(answers.breed) ? answers.breed[0] || '' : answers.breed || '',
+      size: Array.isArray(answers.size) ? answers.size[0] || '' : answers.size || '',
+      energyLevel: Array.isArray(answers.energyLevel) ? answers.energyLevel[0] || '' : answers.energyLevel || '',
       behaviorIssues: behaviorIssues,
       healthIssues: healthIssues,
-      environment: answers.environment || '',
-      experience: answers.trainingExperience || ''
+      environment: Array.isArray(answers.environment) ? answers.environment[0] || '' : answers.environment || '',
+      experience: Array.isArray(answers.trainingExperience) ? answers.trainingExperience[0] || '' : answers.trainingExperience || ''
     },
     recommendations: {
       primaryProgram,
@@ -430,9 +431,9 @@ export default function DogAssessmentBot({ isOpen, onClose, onComplete }: DogAss
                     <label key={option} className="flex items-center space-x-3 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={(answers[currentQuestion.id] || []).includes(option)}
+                        checked={Array.isArray(answers[currentQuestion.id]) ? (answers[currentQuestion.id] as string[]).includes(option) : false}
                         onChange={(e) => {
-                          const currentValues = answers[currentQuestion.id] || [];
+                          const currentValues = Array.isArray(answers[currentQuestion.id]) ? answers[currentQuestion.id] as string[] : [];
                           if (e.target.checked) {
                             handleAnswer([...currentValues, option]);
                           } else {

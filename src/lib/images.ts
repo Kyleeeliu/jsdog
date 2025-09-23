@@ -10,7 +10,7 @@ export const images = {
   },
 
   // Service Icons
-  services: {
+  serviceIcons: {
     behavioralConsultation: '/images/icons/behavioral-consultation.svg',
     socialAssessment: '/images/icons/social-assessment.svg',
     complexConsultation: '/images/icons/complex-consultation.svg',
@@ -176,7 +176,7 @@ export function getOptimizedImageProps(
   imageKey: keyof typeof images,
   size: 'small' | 'medium' | 'large' = 'medium'
 ) {
-  const metadata = imageMetadata[imageKey];
+  const metadata = imageMetadata[imageKey as keyof typeof imageMetadata];
   if (!metadata) return {};
   
   const sizes = {
